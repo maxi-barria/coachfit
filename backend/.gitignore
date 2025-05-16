@@ -1,0 +1,49 @@
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+dist/
+*.tsbuildinfo
+
+# Prisma
+prisma/migrations/
+.prisma/
+
+# Archivos de entorno
+.env
+.env.*
+
+# Logs y archivos temporales
+*.log
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+*.swp
+
+# IDEs / Editores
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Sistema (Windows/macOS)
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.lnk
+$RECYCLE.BIN/
+
+# Docker (si usas)
+docker-compose.override.yml
+
+# Testing / Coverage
+coverage/
