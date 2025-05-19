@@ -10,6 +10,9 @@
     "prisma": "prisma"
 
   },
+  "prisma": {
+    "schema": "./prisma/schema.prisma"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
