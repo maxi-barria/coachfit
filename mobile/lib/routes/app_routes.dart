@@ -7,6 +7,7 @@ class AppRoutes {
     'login': (BuildContext context) => const LoginScreen(),
     'register': (BuildContext context) => const RegisterScreen(),
     'home': (BuildContext context) => const HomeScreen(),
+    'primary': (BuildContext context) => const PrimaryScreen(),
     'error': (BuildContext context) => const ErrorScreen(),
   };
 

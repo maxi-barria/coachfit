@@ -2,7 +2,10 @@ import 'package:mobile/themes/themes.dart';
 import 'package:mobile/widgets/core/button.dart';
 import 'package:mobile/widgets/login/login_form_field.dart';
 import 'package:flutter/material.dart';
+import '../services/auth/register_service.dart';
 
+
+final RegisterService _registerService = RegisterService();
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
   @override
@@ -15,13 +18,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
+ void _register() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      final result = await _registerService.register(
+        _emailController.text,
+        _passwordController.text,
+        _confirmPasswordController.text,
+      );
+
+      if (result['success'] == true) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(result['message'])), // ← Mensaje del backend
+  );
+
+  // Opcional: redirige al login
+  Future.delayed(Duration(seconds: 1), () {
+    Navigator.pushReplacementNamed(context, 'login');
+  });
+
+} else {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('${result['message']}')),
+  );
+}
+
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registro exitoso')),
+        SnackBar(content: Text('Error inesperado: $e')),
       );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

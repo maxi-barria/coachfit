@@ -2,7 +2,8 @@ import 'package:mobile/themes/themes.dart';
 import 'package:mobile/widgets/core/button.dart';
 import 'package:mobile/widgets/login/login_form_field.dart';
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+import '../services/auth/auth_service.dart';
+import 'package:mobile/screens/primary_screen.dart';
 
 final AuthService _authService = AuthService();
 class LoginScreen extends StatefulWidget {
@@ -23,11 +24,18 @@ class _RegisterScreenState extends State<LoginScreen> {
         _emailController.text,
         _passwordController.text,
       );
-
+            print('✅ Redirigiendo a primary');
       // Mostrar token o redirigir
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sesión iniciada: ${result['token']}')),
       );
+
+    Future.delayed(Duration(milliseconds: 100), () {
+    Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const PrimaryScreen()),
+  );
+  });
 
 
     } catch (e) {
