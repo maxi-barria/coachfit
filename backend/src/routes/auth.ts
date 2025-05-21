@@ -86,6 +86,8 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     const token = generateToken(user.id);
 
     res.status(201).json({
+      success: true,
+      message: 'Usuario registrado exitosamente.',
       token,
       user: {
         id: user.id,

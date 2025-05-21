@@ -2,7 +2,10 @@ import 'package:mobile/themes/themes.dart';
 import 'package:mobile/widgets/core/button.dart';
 import 'package:mobile/widgets/login/login_form_field.dart';
 import 'package:flutter/material.dart';
+import '../services/auth/auth_service.dart';
+import 'package:mobile/screens/primary_screen.dart';
 
+final AuthService _authService = AuthService();
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -14,13 +17,34 @@ class _RegisterScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
+  void _login() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      final result = await _authService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+            print('✅ Redirigiendo a primary');
+      // Mostrar token o redirigir
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sesión Iniciada')),
+        SnackBar(content: Text('Sesión iniciada: ${result['token']}')),
+      );
+
+    Future.delayed(Duration(milliseconds: 100), () {
+    Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const PrimaryScreen()),
+  );
+  });
+
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +107,7 @@ class _RegisterScreenState extends State<LoginScreen> {
                 },
               ),
               SizedBox(height: 24),
-              Button(text: 'Iniciar Seción', onPressed: _login, height: 32,)
+              Button(text: 'Iniciar Sesión', onPressed: _login, height: 32,)
             ],
           ),
         ),
