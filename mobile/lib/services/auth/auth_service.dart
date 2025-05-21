@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  static const String baseUrl = 'http://10.0.2.2:3000'; // ← para Android emulator
+  static const String baseUrl = 'https://coachfit-backend.onrender.com'; // ← para Android emulator
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/auth/login');
