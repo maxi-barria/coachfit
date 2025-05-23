@@ -12,5 +12,7 @@ model User {
   email      String   @unique
   password   String
   rol        String
+  resetToken String?
+  resetTokenExpiry DateTime?
   created_at DateTime @default(now())
 }
