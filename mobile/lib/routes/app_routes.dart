@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/screen.dart';
-import '../screens/reset_password_screen.dart'; // <- Asegúrate de tener este archivo
-import '../screens/request_reset_screen.dart'; // <- Asegúrate de tener este archivo
+import '../screens/reset_password_screen.dart'; 
+import '../screens/request_reset_screen.dart';
 
 class AppRoutes {
   static const initialRoute = 'home';

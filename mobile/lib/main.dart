@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:app_links/app_links.dart';
-import 'routes/app_routes.dart';
-
+import 'package:mobile/core/core.dart';
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -54,14 +51,14 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CoachFit',
-      navigatorKey: navigatorKey,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      initialRoute: AppRoutes.initialRoute,
-      routes: AppRoutes.routes,
-      onGenerateRoute: AppRoutes.onGenerateRoute,
-    );
+  title: 'CoachFit',
+  navigatorKey: navigatorKey,
+  theme:      MyTheme.lightTheme,
+  darkTheme:  MyTheme.darkTheme,
+  themeMode:  ThemeMode.dark,
+  initialRoute: AppRoutes.initialRoute,
+  routes:       AppRoutes.routes,
+  onGenerateRoute: AppRoutes.onGenerateRoute,
+);
   }
 }

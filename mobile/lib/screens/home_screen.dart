@@ -1,50 +1,64 @@
-import 'package:mobile/widgets/login/login_container.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile/widgets/core/button.dart';
-import 'package:mobile/themes/themes.dart';
+import 'package:mobile/core/core.dart';
 
-class HomeScreen extends StatelessWidget{
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return LoginContainer(
-      child: Column(
-        children: [
-          Expanded(child: Column(
-            children: [
-              SvgPicture.asset(
-                'lib/assets/logo.svg',
-                fit: BoxFit.contain,  
-              ),
-              Text(
-                'CoachFit', 
-                style: TextStyle(
-                  fontSize: 64, 
-                  fontWeight: FontWeight.bold
-                )
-              ),
-            ],
-          ),
-        ),
-        Column(
-          spacing: 8,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Button(
-              text: 'Registrarse', 
-              onPressed: () => Navigator.pushNamed(context, 'register'),
+            const SizedBox(), // Espacio arriba
+
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'lib/assets/logo.svg',
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'CoachFit',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: MyTheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 3,
+                  width: 100,
+                  color: Colors.yellow,
+                ),
+              ],
             ),
-            Button(
-              text: 'Iniciar Sesión',
-              onPressed: () => Navigator.pushNamed(context, 'login'),
-              textColor: MyTheme.primary,
-              backgroundColor: null,
-            )
-          ]
-        )
-      ],
-      )
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Button(
+                  text: 'Registrarse',
+                  onPressed: () => Navigator.pushNamed(context, 'register'),
+                ),
+                const SizedBox(height: 12),
+                Button(
+                  text: 'Iniciar Sesión',
+                  onPressed: () => Navigator.pushNamed(context, 'login'),
+                  textColor: MyTheme.primary,
+                  backgroundColor: Colors.transparent,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
