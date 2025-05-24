@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import '../../../env/environment.dart';
 class RegisterService {
-  static const String baseUrl = 'https://coachfit-backend.onrender.com'; // ← para Android emulator
+  static const String baseUrl = Environment.apiUrl; // ← para Android emulator
 
   Future<Map<String, dynamic>> register(
       String email, String password, String confirmPassword) async {
