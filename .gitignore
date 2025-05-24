@@ -1,5 +1,5 @@
-linux/
-windows/
-macos/
+mobile/linux/
+mobile/windows/
+mobile/macos/
 .env
 .env.*
