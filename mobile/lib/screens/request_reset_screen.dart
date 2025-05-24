@@ -27,7 +27,7 @@ class _RequestResetScreenState extends State<RequestResetScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl//auth/request-reset'),
+        Uri.parse('$baseUrl/auth/request-reset'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': _emailController.text.trim()}),
       );
@@ -86,10 +86,10 @@ class _RequestResetScreenState extends State<RequestResetScreen> {
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : Button(
-                      text: 'Enviar enlace',
-                      onPressed: _sendResetLink,
-                      height: 48,
-                    ),
+                    text: 'Enviar enlace',
+                    onPressed: _sendResetLink,
+                    height: 48,
+                  ),
               if (_message != null) ...[
                 const SizedBox(height: 20),
                 Text(
@@ -97,9 +97,10 @@ class _RequestResetScreenState extends State<RequestResetScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: _message!.contains('Error')
-                        ? theme.colorScheme.error
-                        : theme.colorScheme.primary,
+                    color:
+                        _message!.contains('Error')
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.primary,
                   ),
                 ),
               ],

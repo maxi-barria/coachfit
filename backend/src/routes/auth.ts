@@ -103,20 +103,20 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-router.post('/request-reset', async (req: Request, res: Response):Promise<void> => {
+router.post('/request-reset', async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
 
   if (!email) {
     res.status(400).json({ message: 'El correo es obligatorio.' });
-    return 
+    return;
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    // Por seguridad, respondemos igual aunque no exista
+    // Por seguridad, responder igual aunque el correo no exista
     res.json({ message: 'Si el correo existe, se ha enviado un enlace.' });
-    return 
+    return;
   }
 
   const token = uuidv4();
@@ -130,16 +130,16 @@ router.post('/request-reset', async (req: Request, res: Response):Promise<void> 
     },
   });
 
-  const resetLink = `coachfit://reset-password?token=${token}`;
-
   try {
-    await sendResetEmail(email, resetLink);
+    // ✅ Le pasamos solo el token
+    await sendResetEmail(email, token);
     res.json({ message: 'Correo de recuperación enviado.' });
   } catch (err) {
     console.error('Error enviando correo:', err);
     res.status(500).json({ message: 'Error al enviar el correo.' });
   }
 });
+
 
 router.post('/reset-password', async (req: Request, res: Response) : Promise<void> => {
   const { token, password, confirmPassword } = req.body;
@@ -178,6 +178,40 @@ router.post('/reset-password', async (req: Request, res: Response) : Promise<voi
 
   res.status(200).json({ message: 'Contraseña actualizada correctamente' });
 });
+
+router.get('/open-app', (req: Request, res: Response) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== 'string') {
+    res.status(400).send('<h3>Token inválido</h3>');
+    return;
+  }
+
+  res.set('Content-Type', 'text/html');
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <title>Redirigiendo a CoachFit</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        </style>
+        <script>
+          window.onload = function() {
+            const token = "${token}";
+            window.location.href = "coachfit://reset-password?token=" + token;
+          }
+        </script>
+      </head>
+      <body>
+        <p>Abriendo CoachFit...</p>
+        <p>Si no pasa nada, asegúrate de tener la app instalada.</p>
+      </body>
+    </html>
+  `);
+});
+
 
 
 export default router;   // ← ¡necesario!
