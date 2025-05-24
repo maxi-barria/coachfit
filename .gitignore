@@ -1,3 +1,5 @@
 linux/
 windows/
 macos/
+.env
+.env.*
