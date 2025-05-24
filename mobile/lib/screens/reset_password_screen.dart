@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../core/core.dart'; // Asegúrate de que aquí se exporte LoginFormField, Button, CustomAppBar
-
+import '../../../env/environment.dart';
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
   const ResetPasswordScreen({super.key, required this.token});
@@ -15,6 +15,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  static const String baseUrl = Environment.apiUrl; // ← para Android emulator
   bool _isLoading = false;
 
   @override
@@ -39,7 +40,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     setState(() => _isLoading = true);
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:3000/auth/reset-password'),
+      Uri.parse('$baseUrl/auth/reset-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'token': widget.token,

@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../core/core.dart';
+import '../../../env/environment.dart';
 
 class RequestResetScreen extends StatefulWidget {
   const RequestResetScreen({super.key});
@@ -14,6 +15,7 @@ class _RequestResetScreenState extends State<RequestResetScreen> {
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
   String? _message;
+  static const String baseUrl = Environment.apiUrl;
 
   Future<void> _sendResetLink() async {
     if (!_formKey.currentState!.validate()) return;
@@ -25,7 +27,7 @@ class _RequestResetScreenState extends State<RequestResetScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/auth/request-reset'),
+        Uri.parse('$baseUrl//auth/request-reset'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': _emailController.text.trim()}),
       );
