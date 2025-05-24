@@ -45,12 +45,12 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Button(
                   text: 'Registrarse',
-                  onPressed: () => Navigator.pushNamed(context, 'register'),
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
                 ),
                 const SizedBox(height: 12),
                 Button(
                   text: 'Iniciar Sesión',
-                  onPressed: () => Navigator.pushNamed(context, 'login'),
+                  onPressed: () => Navigator.pushNamed(context, '/login'),
                   textColor: MyTheme.primary,
                   backgroundColor: Colors.transparent,
                 ),

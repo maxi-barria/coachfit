@@ -31,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // Opcional: redirige al login
   Future.delayed(Duration(seconds: 1), () {
-    Navigator.pushReplacementNamed(context, 'login');
+    Navigator.pushReplacementNamed(context, '/login');
   });
 
 } else {

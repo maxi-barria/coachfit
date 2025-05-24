@@ -63,7 +63,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     setState(() => _isLoading = false);
 
     if (response.statusCode == 200) {
-      Navigator.pushReplacementNamed(context, 'login');
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 

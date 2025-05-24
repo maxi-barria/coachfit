@@ -35,18 +35,24 @@ class _MyAppState extends State<MyApp> {
       _redirectIfNeeded(uri);
     });
   }
+void _redirectIfNeeded(Uri? uri) {
+  if (uri != null) {
+    debugPrint('🌐 URI: $uri');
+    final path = uri.path;
+    final token = uri.queryParameters['token'];
+    debugPrint('📍 path: $path');
+    debugPrint('📦 token: $token');
 
-  void _redirectIfNeeded(Uri? uri) {
-    if (uri != null && uri.path == '/reset-password') {
-      final token = uri.queryParameters['token'];
-      print('📥 Token desde deep link: $token');
-      if (token != null) {
-        Future.microtask(() {
-          navigatorKey.currentState?.pushNamed('/reset', arguments: token);
-        });
-      }
+    if (path == '/reset-password' && token != null) {
+      Future.microtask(() {
+        debugPrint('🧭 Navegando a /reset con token: $token');
+        navigatorKey.currentState?.pushNamed('/reset', arguments: token);
+      });
     }
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {

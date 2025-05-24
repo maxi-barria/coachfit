@@ -89,7 +89,7 @@ class _RegisterScreenState extends State<LoginScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, 'request-reset');
+                    Navigator.pushNamed(context, '/request-reset');
                   },
                   child: Text(
                     '¿Olvidaste tu contraseña?',

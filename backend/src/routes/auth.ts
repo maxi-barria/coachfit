@@ -179,38 +179,6 @@ router.post('/reset-password', async (req: Request, res: Response) : Promise<voi
   res.status(200).json({ message: 'Contraseña actualizada correctamente' });
 });
 
-router.get('/open-app', (req: Request, res: Response) => {
-  const { token } = req.query;
-
-  if (!token || typeof token !== 'string') {
-    res.status(400).send('<h3>Token inválido</h3>');
-    return;
-  }
-
-  res.set('Content-Type', 'text/html');
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <title>Redirigiendo a CoachFit</title>
-        <style>
-          body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-        </style>
-        <script>
-          window.onload = function() {
-            const token = "${token}";
-            window.location.href = "coachfit://reset-password?token=" + token;
-          }
-        </script>
-      </head>
-      <body>
-        <p>Abriendo CoachFit...</p>
-        <p>Si no pasa nada, asegúrate de tener la app instalada.</p>
-      </body>
-    </html>
-  `);
-});
 
 
 
