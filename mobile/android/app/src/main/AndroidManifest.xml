@@ -37,6 +37,15 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
         </activity>
+            <!-- Desactiva Impeller en el emulador: fuerza el rasterizador clásico (Skia) -->
+    <meta-data
+        android:name="io.flutter.embedding.android.EnableImpeller"
+        android:value="false"/>
+
+    <!-- (opcional) deja Skia explícitamente activo; seguro en todos los dispositivos -->
+    <meta-data
+        android:name="io.flutter.embedding.android.EnableSkiaRasterizer"
+        android:value="true"/>
 
         <!-- Meta necesaria para plugins Flutter -->
         <meta-data

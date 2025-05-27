@@ -1,70 +1,74 @@
+import 'package:flutter/material.dart';
 import 'package:mobile/core/core.dart';
-void main() {
-  runApp(MyApp());
-}
+import 'screens/reset_password_screen.dart';
+import 'package:app_links/app_links.dart';
+
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  final AppLinks _appLinks = AppLinks();
+  final navigatorKey = GlobalKey<NavigatorState>();
+  final _appLinks    = AppLinks();
+
+  String? _lastToken;                       // evita dobles intents
 
   @override
   void initState() {
     super.initState();
-    _listenForInitialLink();
-    _listenForLiveLinks();
+    _listenInitial();
+    _listenStream();
   }
 
-  void _listenForInitialLink() async {
-    try {
-      final uri = await _appLinks.getInitialAppLink();
-      _redirectIfNeeded(uri);
-    } catch (e) {
-      print('Error al obtener el link inicial: $e');
-    }
+  /* ---------- deep-links ---------- */
+
+  void _listenInitial() async {
+    _handleUri(await _appLinks.getInitialAppLink());
   }
 
-  void _listenForLiveLinks() {
-    _appLinks.uriLinkStream.listen((uri) {
-      _redirectIfNeeded(uri);
-    });
+  void _listenStream() {
+    _appLinks.uriLinkStream.listen(_handleUri);
   }
-void _redirectIfNeeded(Uri? uri) {
-  if (uri != null) {
-    debugPrint('🌐 URI: $uri');
-    final path = uri.path;
+
+  void _handleUri(Uri? uri) {
+    if (uri == null) return;
+
     final token = uri.queryParameters['token'];
-    debugPrint('📍 path: $path');
-    debugPrint('📦 token: $token');
+    final isReset = uri.host == 'reset-password';
 
-    if (path == '/reset-password' && token != null) {
-      Future.microtask(() {
-        debugPrint('🧭 Navegando a /reset con token: $token');
-        navigatorKey.currentState?.pushNamed('/reset', arguments: token);
-      });
-    }
+    if (!isReset || token == null) return;          // no es nuestro link
+    if (token == _lastToken) return;                // duplicado
+    _lastToken = token;
+
+    debugPrint('🧭 deep-link con token $token');
+
+    // ‼️ limpiamos la pila y reemplazamos por la pantalla de reset
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => ResetPasswordScreen(token: token),
+      ),
+      (route) => false,      // elimina todas las rutas anteriores
+    );
   }
-}
 
-
+  /* ---------- app ---------- */
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-  title: 'CoachFit',
-  navigatorKey: navigatorKey,
-  theme:      MyTheme.lightTheme,
-  darkTheme:  MyTheme.darkTheme,
-  themeMode:  ThemeMode.dark,
-  initialRoute: AppRoutes.initialRoute,
-  routes:       AppRoutes.routes,
-  onGenerateRoute: AppRoutes.onGenerateRoute,
-);
+      title: 'CoachFit',
+      navigatorKey: navigatorKey,
+      theme:       MyTheme.lightTheme,
+      darkTheme:   MyTheme.darkTheme,
+      themeMode:   ThemeMode.dark,
+      initialRoute: AppRoutes.initialRoute,
+      routes:        AppRoutes.routes,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
+      debugShowCheckedModeBanner: false,
+    );
   }
 }

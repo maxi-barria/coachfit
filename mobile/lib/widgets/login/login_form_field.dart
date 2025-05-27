@@ -37,23 +37,26 @@ class LoginFormField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          validator: validator,
-          keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: const TextStyle(color: Colors.white54),
-            labelStyle: const TextStyle(color: Colors.white70),
-            enabledBorder: border,
-            focusedBorder: border.copyWith(
-              borderSide: const BorderSide(color: MyTheme.primary, width: 2),
-            ),
-            border: border,
-            suffixIcon: suffixIcon,
-          ),
-        ),
+  controller: controller,
+  obscureText: obscureText,
+  validator: validator,
+  keyboardType: keyboardType,
+  style: const TextStyle(color: Colors.white),
+  decoration: InputDecoration(
+    filled: true,
+    fillColor: MyTheme.darkSurf, // Fondo oscuro consistente
+    hintText: hintText,
+    hintStyle: const TextStyle(color: Colors.white54),
+    labelStyle: const TextStyle(color: Colors.white70),
+    enabledBorder: border,
+    focusedBorder: border.copyWith(
+      borderSide: const BorderSide(color: MyTheme.primary, width: 2),
+    ),
+    border: border,
+    suffixIcon: suffixIcon,
+  ),
+),
+
       ],
     );
   }

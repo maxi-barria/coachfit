@@ -14,24 +14,22 @@ class AppRoutes {
     '/error': (BuildContext context) => const ErrorScreen(),
     '/request-reset': (BuildContext context) => const RequestResetScreen(),
   };
-
-static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-  debugPrint('📍 onGenerateRoute: ${settings.name}');
-  debugPrint('📦 arguments: ${settings.arguments}');
-
-  if (settings.name == '/reset') {
-    final token = settings.arguments;
-    if (token is String) {
-      debugPrint('✅ Redirigiendo a ResetPasswordScreen con token');
-      return MaterialPageRoute(
-        builder: (context) => ResetPasswordScreen(token: token),
-      );
-    } else {
-      debugPrint('❌ Argumento no válido');
-    }
+static Route<dynamic> onGenerateRoute(RouteSettings s) {
+  if (s.name == '/reset' && s.arguments is String) {
+    return MaterialPageRoute(
+      builder: (_) => ResetPasswordScreen(token: s.arguments as String),
+    );
   }
-
+  if (s.name?.startsWith('/?token=') ?? false) {
+    // descartamos “/?token=…” si Android lo llegara a inyectar
+    return MaterialPageRoute(builder: (_) => const SizedBox.shrink());
+  }
   return MaterialPageRoute(builder: (_) => const ErrorScreen());
 }
+
+
+
+
+
 
 }

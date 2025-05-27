@@ -12,12 +12,14 @@ class MyTheme {
     brightness: Brightness.light,
     primaryColor: primary,
     fontFamily: 'Poppins',
+    
     colorScheme: ColorScheme.fromSeed(
       seedColor: primary,
       brightness: Brightness.light,
       primary: primary,
       secondary: secondary,
       error: Colors.red,
+      onBackground: Colors.black,
     ),
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: const AppBarTheme(
@@ -48,6 +50,7 @@ class MyTheme {
       background: darkBg,
       surface:   darkSurf,
       error: Colors.red,
+      onBackground: Colors.white,
     ),
 
     appBarTheme: const AppBarTheme(
