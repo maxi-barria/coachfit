@@ -17,7 +17,7 @@ class PrimaryScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             tooltip: 'Log out',
             onPressed: () {
-              Navigator.pushReplacementNamed(context, 'login');
+              Navigator.pushReplacementNamed(context, '/login');
             },
           )
         ],

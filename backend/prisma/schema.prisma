@@ -12,5 +12,53 @@ model User {
   email      String   @unique
   password   String
   rol        String
+  resetToken String?
+  resetTokenExpiry DateTime?
   created_at DateTime @default(now())
+  exercises          Exercise[]
+  musclePortions     Muscle_Portion[]
+}
+model Muscle {
+  id      String             @id @default(uuid())
+  name    String
+
+  portions Muscle_Portion[]
+}
+
+model Muscle_Portion {
+  id        String   @id @default(uuid())
+  name      String
+  muscle_id String
+  user_id   String?          // null → global, valor → personalizado por usuario
+  is_custom Boolean @default(false)
+
+  muscle    Muscle   @relation(fields: [muscle_id], references: [id])
+  user      User?    @relation(fields: [user_id], references: [id])
+  Exercise_Muscle_Portion Exercise_Muscle_Portion[]
+}
+
+model Exercise {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  type            String?
+  seconds_duration Int?
+
+  user_id         String?        // null → global
+  is_custom       Boolean @default(false)
+
+  user            User?          @relation(fields: [user_id], references: [id])
+  Exercise_Muscle_Portion Exercise_Muscle_Portion[]
+}
+
+model Exercise_Muscle_Portion {
+  id                String          @id @default(uuid())
+  exercise_id       String
+  muscle_portion_id String
+  estimated_percentage Int
+
+  exercise          Exercise        @relation(fields: [exercise_id], references: [id])
+  muscle_portion    Muscle_Portion  @relation(fields: [muscle_portion_id], references: [id])
+
+  @@unique([exercise_id, muscle_portion_id]) // No se repiten combinaciones
 }

@@ -1,8 +1,5 @@
-import 'package:mobile/themes/themes.dart';
-import 'package:mobile/widgets/core/button.dart';
-import 'package:mobile/widgets/login/login_form_field.dart';
-import 'package:flutter/material.dart';
 import '../services/auth/register_service.dart';
+import 'package:mobile/core/core.dart';
 
 
 final RegisterService _registerService = RegisterService();
@@ -34,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // Opcional: redirige al login
   Future.delayed(Duration(seconds: 1), () {
-    Navigator.pushReplacementNamed(context, 'login');
+    Navigator.pushReplacementNamed(context, '/login');
   });
 
 } else {
@@ -55,30 +52,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromRGBO(29, 31, 36, 1),
-      appBar: AppBar(
-        backgroundColor: Color.fromRGBO(29, 31, 36, 1),
-        elevation: 0,
-        leading: Row(
-          children: [
-            TextButton.icon(
-              label: Text(
-                'Atrás',
-                style: TextStyle(color: MyTheme.primary, fontSize: 16),
-              ),
-              icon: const Icon(
-                Icons.arrow_back_ios,
-                color: MyTheme.primary,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ]),
-        title: Text('Registrarse',
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.white)),
-        centerTitle: true,
-      ),
+      appBar: const CustomAppBar(title: 'Registrarse'),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -124,7 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               SizedBox(height: 24),
-              Button(text: 'Registrarse', onPressed: _register, height: 32,)
+              Button(text: 'Registrarse', onPressed: _register, height: 48,)
             ],
           ),
         ),
