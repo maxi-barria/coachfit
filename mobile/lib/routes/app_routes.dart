@@ -8,7 +8,11 @@ class AppRoutes {
     'register': (BuildContext context) => const RegisterScreen(),
     'home': (BuildContext context) => const HomeScreen(),
     'error': (BuildContext context) => const ErrorScreen(),
-  };
+    'profile': (BuildContext context) => const ProfileScreen(),
+    'coach': (BuildContext context) => const CoachScreen(),
+    'exercise': (BuildContext context) => const ExerciseScreen(),
+    'train': (BuildContext context) => const TrainScreen(),
+  }; 
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     return MaterialPageRoute(
