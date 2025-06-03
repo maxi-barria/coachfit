@@ -1,50 +1,63 @@
-import 'package:mobile/themes/themes.dart';
 import 'package:flutter/material.dart';
-
+import 'package:mobile/themes/themes.dart';
 
 class LoginFormField extends StatelessWidget {
   final String label;
+  final String? hintText;
   final TextEditingController controller;
-  final bool? obscureText;
-  final String ? Function(String?)? validator;
+  final bool obscureText;
+  final String? Function(String?)? validator;
+  final TextInputType keyboardType;
+  final Widget? suffixIcon;
 
   const LoginFormField({
+    super.key,
     required this.controller,
     required this.label,
+    this.hintText,
     this.obscureText = false,
     this.validator,
-    super.key, 
-    });
+    this.keyboardType = TextInputType.text,
+    this.suffixIcon,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: MyTheme.primary),
+    );
+
     return Column(
-      spacing: 8,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.white, fontSize: 16),),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
-          obscureText: obscureText ?? false,
-          validator: validator,
-          style: TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelStyle: TextStyle(color: Colors.white70),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: MyTheme.primary),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: MyTheme.primary, width: 2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: MyTheme.primary),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        )
+  controller: controller,
+  obscureText: obscureText,
+  validator: validator,
+  keyboardType: keyboardType,
+  style: const TextStyle(color: Colors.white),
+  decoration: InputDecoration(
+    filled: true,
+    fillColor: MyTheme.darkSurf, // Fondo oscuro consistente
+    hintText: hintText,
+    hintStyle: const TextStyle(color: Colors.white54),
+    labelStyle: const TextStyle(color: Colors.white70),
+    enabledBorder: border,
+    focusedBorder: border.copyWith(
+      borderSide: const BorderSide(color: MyTheme.primary, width: 2),
+    ),
+    border: border,
+    suffixIcon: suffixIcon,
+  ),
+),
+
       ],
-    );  
+    );
   }
 }
