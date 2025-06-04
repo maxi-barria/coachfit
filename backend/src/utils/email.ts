@@ -9,7 +9,6 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendResetEmail = async (to: string, token: string) => {
-  // ✅ Usamos un link clickeable que redirige a la app
   const resetLink = `https://coachfit-backend.onrender.com/open-app?token=${token}`;
 
   await transporter.sendMail({

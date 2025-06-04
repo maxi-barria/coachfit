@@ -131,7 +131,6 @@ router.post('/request-reset', async (req: Request, res: Response): Promise<void>
   });
 
   try {
-    // ✅ Le pasamos solo el token
     await sendResetEmail(email, token);
     res.json({ message: 'Correo de recuperación enviado.' });
   } catch (err) {
