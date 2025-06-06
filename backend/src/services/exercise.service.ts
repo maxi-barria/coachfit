@@ -9,9 +9,24 @@ import {
 export const createExercise = async (
   data: CreateExerciseInput,
   userId: string,
+  userRole: string
 ) => {
-  return prisma.exercise.create({
-    data: { ...data, user_id: userId, is_custom: true },
+  const exerciseData: any = {
+    ...data,
+    is_custom: true,
+  };
+
+  // Si el usuario es admin y no especificó user_id, se crea como global
+  if (userRole === 'admin') {
+    exerciseData.user_id = null;
+    exerciseData.is_custom = false;
+  } else {
+    // Usuario normal: siempre asociado a su usuario
+    exerciseData.user_id = userId;
+  }
+
+  return await prisma.exercise.create({
+    data: exerciseData,
   });
 };
 
@@ -74,9 +89,26 @@ export const deleteExercise = async (id: string, userId: string) => {
 
 export const searchExercises = async (
   userId: string,
-  { q, bodyPart, portionId, page = 1, limit = 20 }: {
-    q?: string; bodyPart?: string; portionId?: string;
-    page?: number; limit?: number;
+  {
+    q,
+    bodyPart,
+    portionId,
+    page = 1,
+    limit = 20,
+    orderBy = 'name',
+    order = 'asc',
+    difficulty,
+    equipment
+  }: {
+    q?: string;
+    bodyPart?: string;
+    portionId?: string;
+    page?: number;
+    limit?: number;
+    orderBy?: string;
+    order?: 'asc' | 'desc';
+    difficulty?: string;
+    equipment?: string;
   }
 ) => {
   const where: any = {
@@ -84,49 +116,66 @@ export const searchExercises = async (
   };
 
   if (q) where.name = { contains: q, mode: 'insensitive' };
-  if (bodyPart) where.Exercise_Muscle_Portion = {
-    some: { muscle_portion: { muscle: { name: bodyPart } } },
-  };
-  if (portionId) where.Exercise_Muscle_Portion = {
-    some: { muscle_portion_id: portionId },
-  };
+  if (bodyPart) {
+    where.Exercise_Muscle_Portion = {
+      some: { muscle_portion: { muscle: { name: bodyPart } } },
+    };
+  }
+  if (portionId) {
+    where.Exercise_Muscle_Portion = {
+      some: { muscle_portion_id: portionId },
+    };
+  }
+  if (difficulty) where.difficulty = difficulty;
+  if (equipment) where.equipment = equipment;
 
-  return prisma.exercise.findMany({
+  const totalCount = await prisma.exercise.count({ where });
+
+  const data = await prisma.exercise.findMany({
     where,
     skip: (page - 1) * limit,
     take: limit,
+    orderBy: { [orderBy]: order },
   });
+
+  return {
+    totalCount,
+    page,
+    limit,
+    data,
+  };
 };
+
 
 export const assignPortionsToExercise = async (
   exerciseId: string,
-  portionIds: string[],
+  portions: { id: string; estimated_percentage: number }[],
   userId: string
 ) => {
-  // Asegura que el ejercicio existe y pertenece al usuario
+  // Verifica que el ejercicio existe y es del usuario (o global)
   const existingExercise = await prisma.exercise.findFirst({
     where: {
       id: exerciseId,
-      OR: [{ user_id: userId }, { user_id: null }], // global o propio
+      OR: [{ user_id: userId }, { user_id: null }],
     },
   });
   if (!existingExercise) {
     return { status: 404, message: 'Exercise not found or not yours' };
   }
 
-  // Asegura que todas las porciones existen
+  // Verifica que todas las porciones existen
   const existingPortions = await prisma.muscle_Portion.findMany({
-    where: { id: { in: portionIds } },
+    where: { id: { in: portions.map(p => p.id) } },
   });
-  if (existingPortions.length !== portionIds.length) {
+  if (existingPortions.length !== portions.length) {
     return { status: 400, message: 'Some portionIds do not exist' };
   }
 
-  // Crea las relaciones
-  const data = portionIds.map(pid => ({
+  // Inserta las relaciones
+  const data = portions.map(p => ({
     exercise_id: exerciseId,
-    muscle_portion_id: pid,
-    estimated_percentage: 100,
+    muscle_portion_id: p.id,
+    estimated_percentage: p.estimated_percentage,
   }));
 
   await prisma.exercise_Muscle_Portion.createMany({

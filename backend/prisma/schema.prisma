@@ -46,6 +46,12 @@ model Exercise {
 
   user_id         String?        // null → global
   is_custom       Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  difficulty String? // beginner, intermediate, advanced
+  equipment String? // bodyweight, dumbbell, etc.
+  video_url String?
+  thumbnail String?
 
   user            User?          @relation(fields: [user_id], references: [id])
   Exercise_Muscle_Portion Exercise_Muscle_Portion[]
