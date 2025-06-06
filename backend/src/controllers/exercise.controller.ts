@@ -4,6 +4,8 @@ import * as ExerciseService from '../services/exercise.service';
 import {
   createExerciseSchema,
   updateExerciseSchema,
+  searchExerciseSchema,
+  assignPortionsSchema 
 } from '../validators/exercise.validator';
 
 /* -------- CREATE -------- */
@@ -90,5 +92,67 @@ export const deleteExercise: RequestHandler = async (req, res, next) => {
     res.status(204).send();
   } catch (err) {
     next(err);
+  }
+};
+/* -------- SEARCH -------- */
+export const searchExercises: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const { q, bodyPart, portionId, page, limit } = req.query;
+
+    const data = await ExerciseService.searchExercises(userId, {
+      q: q as string | undefined,
+      bodyPart: bodyPart as string | undefined,
+      portionId: portionId as string | undefined,
+      page: Number(page) || 1,
+      limit: Number(limit) || 20,
+    });
+
+    res.json(data);
+    return;
+  } catch (err) {
+    next(err);
+    return;
+  }
+};
+
+/* -------- ASSIGN PORTIONS -------- */
+export const assignPortions: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const { exerciseId } = req.params;
+    const { portionIds } = req.body;
+
+    if (!Array.isArray(portionIds) || portionIds.length === 0) {
+      res.status(400).json({ message: 'portionIds is required' });
+      return;
+    }
+
+    const result = await ExerciseService.assignPortionsToExercise(
+      exerciseId,
+      portionIds,
+      userId
+    );
+
+    if (result.status === 404) {
+      res.status(404).json({ message: result.message });
+      return;
+    }
+
+    res.json({ message: 'Portions assigned successfully' });
+    return;
+  } catch (err) {
+    next(err);
+    return;
   }
 };
