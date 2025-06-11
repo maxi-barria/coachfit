@@ -1,6 +1,6 @@
 import 'package:mobile/themes/themes.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/screen.dart';
+import 'package:mobile/screens/core/screen.dart';
 
 class Navigation extends StatefulWidget {
   const Navigation({super.key});

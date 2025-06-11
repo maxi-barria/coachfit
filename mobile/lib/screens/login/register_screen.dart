@@ -1,4 +1,4 @@
-import '../services/auth/register_service.dart';
+import '../../services/auth/register_service.dart';
 import 'package:mobile/core/core.dart';
 
 

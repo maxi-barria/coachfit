@@ -19,7 +19,7 @@ class MyTheme {
       primary: primary,
       secondary: secondary,
       error: Colors.red,
-      onBackground: Colors.black,
+      onSurface: Colors.black,
     ),
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: const AppBarTheme(
@@ -31,6 +31,32 @@ class MyTheme {
         backgroundColor: primary,
         foregroundColor: Colors.white,
       ),
+    ),
+    textTheme: TextTheme(
+      titleLarge: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: Colors.black,
+        decoration: TextDecoration.none
+      ),
+      titleMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: Colors.black,
+        decoration: TextDecoration.none
+      ),
+      titleSmall: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.black,
+        decoration: TextDecoration.none
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Colors.black,
+        decoration: TextDecoration.none
+      )
     ),
   );
 
@@ -50,7 +76,7 @@ class MyTheme {
       background: darkBg,
       surface:   darkSurf,
       error: Colors.red,
-      onBackground: Colors.white,
+      onSurface: Colors.white,
     ),
 
     appBarTheme: const AppBarTheme(
@@ -76,6 +102,33 @@ class MyTheme {
         borderSide: const BorderSide(color: primary, width: 2),
       ),
       labelStyle: const TextStyle(color: Colors.white70),
+    ),
+
+    textTheme: TextTheme(
+      titleLarge: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+        decoration: TextDecoration.none
+      ),
+      titleMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+        decoration: TextDecoration.none
+      ),
+      titleSmall: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+        decoration: TextDecoration.none
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Colors.white,
+        decoration: TextDecoration.none
+      )
     ),
   );
 }

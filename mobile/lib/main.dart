@@ -1,9 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:mobile/core/core.dart';
-import 'screens/reset_password_screen.dart';
-import 'package:app_links/app_links.dart';
+import 'screens/login/reset_password_screen.dart';
+import 'package:mobile/providers/loggin_provider.dart';
+import 'package:provider/provider.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => LogginProvider()),
+    ],
+    child: MyApp(),
+  ));
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -64,7 +69,7 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: navigatorKey,
       theme:       MyTheme.lightTheme,
       darkTheme:   MyTheme.darkTheme,
-      themeMode:   ThemeMode.dark,
+      themeMode:   ThemeMode.light,
       initialRoute: AppRoutes.initialRoute,
       routes:        AppRoutes.routes,
       onGenerateRoute: AppRoutes.onGenerateRoute,

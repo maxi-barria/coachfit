@@ -43,6 +43,8 @@ model Exercise {
   description     String?
   type            String?
   seconds_duration Int?
+  imageUrl        String?
+  gifUrl        String?
 
   user_id         String?        // null → global
   is_custom       Boolean @default(false)

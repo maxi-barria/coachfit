@@ -5,6 +5,8 @@ export const createExerciseSchema = z.object({
   description: z.string().optional(),
   type: z.string().optional(),
   seconds_duration: z.number().int().positive().optional(),
+  imageUrl: z.string().optional(),
+  gifUrl: z.string().optional(),
 });
 
 export const updateExerciseSchema = createExerciseSchema.partial();

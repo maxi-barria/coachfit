@@ -1,9 +1,0 @@
-export 'package:mobile/screens/error_screen.dart';
-export 'package:mobile/screens/home_screen.dart';
-export 'package:mobile/screens/login_screen.dart';
-export 'package:mobile/screens/register_screen.dart';
-export 'package:mobile/screens/coach_screen.dart';
-export 'package:mobile/screens/profile_screen.dart';
-export 'package:mobile/screens/exercise_screen.dart';
-export 'package:mobile/screens/train_screen.dart';
-export 'package:mobile/screens/primary_screen.dart';

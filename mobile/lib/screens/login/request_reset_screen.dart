@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../core/core.dart';
-import '../../../env/environment.dart';
+import '../../core/core.dart';
+import '../../../../env/environment.dart';
 
 class RequestResetScreen extends StatefulWidget {
   const RequestResetScreen({super.key});

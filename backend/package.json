@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "postinstall": "prisma generate",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "import_muscles": "ts-node-dev --respawn --files scripts/import_muscles.ts",
+    "import_exercises": "ts-node-dev --respawn --files scripts/import_exercises.ts"
   },
   "prisma": {
     "schema": "./prisma/schema.prisma"
