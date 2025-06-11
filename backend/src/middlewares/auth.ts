@@ -31,7 +31,8 @@ router.post(
         return;
       }
 
-      const token = generateToken(user.id);
+      // 🔥 Incluye el rol en el token
+      const token = generateToken(user.id, user.rol);
 
       res.json({
         token,
@@ -44,10 +45,10 @@ router.post(
   }
 );
 
+
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   const { email, password, confirmPassword, rol } = req.body;
 
-  // Validaciones básicas
   if (!email || !password || !confirmPassword) {
     res.status(400).json({ message: 'Todos los campos son obligatorios.' });
     return;
@@ -81,11 +82,12 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       data: {
         email,
         password: hashedPassword,
-        rol: rol || '', // puede ser 'cliente' u otro valor por defecto
+        rol: rol || 'cliente', // default 'cliente' si no se envía
       },
     });
 
-    const token = generateToken(user.id);
+    // 🔥 Incluye el rol en el token
+    const token = generateToken(user.id, user.rol);
 
     res.status(201).json({
       success: true,
@@ -102,6 +104,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
+
 
 router.post('/request-reset', async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
