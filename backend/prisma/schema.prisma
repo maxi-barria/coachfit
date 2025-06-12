@@ -16,11 +16,16 @@ model User {
   resetTokenExpiry DateTime?
   createdAt        DateTime  @default(now())
 
-  exercises      Exercise[]
-  musclePortions MusclePortion[]
-  routines       Routine[]
-  workouts       Workout[]
+  exercises       Exercise[]
+  musclePortions  MusclePortion[]
+  routines        Routine[]
+  workouts        Workout[]
+  workoutSessions WorkoutSession[]
 }
+
+/**
+ * ---------- Catálogos y core ----------
+ */
 
 model Muscle {
   id       String          @id @default(uuid())
@@ -59,6 +64,7 @@ model Exercise {
   user                   User?                   @relation(fields: [userId], references: [id])
   exerciseMusclePortions ExerciseMusclePortion[]
   workoutExercises       WorkoutExercise[]
+  setSessions            SetSession[]
 }
 
 model ExerciseMusclePortion {
@@ -111,6 +117,7 @@ model Workout {
   user             User              @relation(fields: [userId], references: [id])
   workoutExercises WorkoutExercise[]
   routineWorkouts  RoutineWorkout[]
+  workoutSessions  WorkoutSession[]
 }
 
 model WorkoutExercise {
@@ -119,9 +126,10 @@ model WorkoutExercise {
   exerciseId String
   orden      Int
 
-  workout  Workout  @relation(fields: [workoutId], references: [id])
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
-  sets     Set[]
+  workout     Workout      @relation(fields: [workoutId], references: [id])
+  exercise    Exercise     @relation(fields: [exerciseId], references: [id])
+  sets        Set[]
+  setSessions SetSession[]
 }
 
 model Set {
@@ -137,10 +145,62 @@ model Set {
   intensityIndicator IntensityIndicator? @relation(fields: [intensityIndicatorId], references: [id])
 }
 
+/**
+ * ---------- Progreso del usuario ----------
+ */
+
+model WorkoutSession {
+  id              String    @id @default(uuid())
+  userId          String
+  workoutId       String
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  secondsDuration Int?
+  comment         String?
+
+  user        User                   @relation(fields: [userId], references: [id])
+  workout     Workout                @relation(fields: [workoutId], references: [id])
+  setSessions SetSession[]
+  summary     WorkoutSessionSummary?
+}
+
+model SetSession {
+  id                   String   @id @default(uuid())
+  workoutSessionId     String
+  workoutExerciseId    String
+  rep                  Int
+  weight               Float
+  restSeconds          Int
+  intensityIndicatorId String?
+  createdAt            DateTime @default(now())
+
+  workoutSession     WorkoutSession      @relation(fields: [workoutSessionId], references: [id])
+  workoutExercise    WorkoutExercise     @relation(fields: [workoutExerciseId], references: [id])
+  intensityIndicator IntensityIndicator? @relation(fields: [intensityIndicatorId], references: [id])
+  Exercise           Exercise?           @relation(fields: [exerciseId], references: [id])
+  exerciseId         String?
+}
+
+model WorkoutSessionSummary {
+  id               String   @id @default(uuid())
+  workoutSessionId String   @unique
+  totalVolume      Float
+  totalSets        Int
+  totalReps        Int
+  createdAt        DateTime @default(now())
+
+  workoutSession WorkoutSession @relation(fields: [workoutSessionId], references: [id])
+}
+
+/**
+ * ---------- Catálogo de intensidad ----------
+ */
+
 model IntensityIndicator {
-  id          String  @id @default(uuid())
+  id          String       @id @default(uuid())
   name        String
   value       String
   description String?
   sets        Set[]
+  setSessions SetSession[]
 }
