@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import authRoutes from './middlewares/auth';
 import publicRoutes from './routes/public';
 import { registerRoutes } from './routes';
+import routineRoutes from './routes/routine.routes';
+import workoutSessionRoutes from './routes/workoutSession.routes'
 
 dotenv.config();
 
@@ -14,7 +16,8 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use(publicRoutes);
 registerRoutes(app);
-
+app.use('/routines', routineRoutes);
+app.use('/workout-sessions', workoutSessionRoutes)
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
