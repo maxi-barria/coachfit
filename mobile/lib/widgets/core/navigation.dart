@@ -1,6 +1,6 @@
-import 'package:mobile/themes/themes.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/core/screen.dart';
+import 'package:mobile/screens/core/screen.dart'; // importa tus pantallas
+import 'package:mobile/themes/themes.dart';
 
 class Navigation extends StatefulWidget {
   const Navigation({super.key});
@@ -10,58 +10,36 @@ class Navigation extends StatefulWidget {
 }
 
 class _NavigationState extends State<Navigation> {
-  final List<String> _routeNames = [
-    'profile',
-    'coach',
-    'train',
-    'exercise',
-  ];
-
   int _selectedIndex = 0;
 
+  final List<Widget> _pages = const [
+    ProfileScreen(),
+    CoachScreen(),
+    TrainScreen(),
+    ExerciseScreen(),
+  ];
+
   void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.pushReplacementNamed(context, _routeNames[index]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Navigator(
-        key: GlobalKey<NavigatorState>(),
-        onGenerateRoute: (settings) {
-          Widget page;
-          switch (_routeNames[_selectedIndex]) {
-            case 'profile':
-              page = ProfileScreen();
-              break;
-            case 'coach':
-              page = CoachScreen();
-              break;
-            case 'train':
-              page = TrainScreen();
-              break;
-            case 'exercise':
-              page = ExerciseScreen();
-              break;
-            default:
-              page = ProfileScreen();
-          }
-          return MaterialPageRoute(builder: (_) => page);
-        },
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
-        destinations: [
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Perfil',),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Perfil'),
           NavigationDestination(icon: Icon(Icons.people), label: 'Coach'),
           NavigationDestination(icon: Icon(Icons.add), label: 'Entrenamiento'),
-          NavigationDestination(icon: Icon(Icons.fitness_center), label: 'Ejercicios',
-          ),
+          NavigationDestination(icon: Icon(Icons.fitness_center), label: 'Ejercicios'),
         ],
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         backgroundColor: Colors.grey[200],

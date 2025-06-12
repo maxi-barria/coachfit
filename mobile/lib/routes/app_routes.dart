@@ -12,10 +12,14 @@ class AppRoutes {
     'error': (BuildContext context) => const ErrorScreen(),
     'main': (BuildContext context) => const MainScreen(),
     'request-reset': (BuildContext context) => const RequestResetScreen(),
-    'exercise_detail': (BuildContext context) => ExerciseDetailScreen(id: ModalRoute.of(context)!.settings.arguments as String),
   };
   
 static Route<dynamic> onGenerateRoute(RouteSettings s) {
+  if (s.name == 'exercise_detail' && s.arguments is String) {
+    return MaterialPageRoute(
+      builder: (_) => ExerciseDetailScreen(id: s.arguments as String),
+    );
+  }
   if (s.name == '/reset' && s.arguments is String) {
     return MaterialPageRoute(
       builder: (_) => ResetPasswordScreen(token: s.arguments as String),

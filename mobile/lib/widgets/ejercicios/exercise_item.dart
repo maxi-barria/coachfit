@@ -18,7 +18,7 @@ class ExerciseItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap:
-          () => Navigator.pushNamed(context, 'exercise_detail', arguments: id),
+          () => Navigator.of(context, rootNavigator: true).pushNamed('exercise_detail', arguments: id),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(8),
