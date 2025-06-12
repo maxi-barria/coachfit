@@ -32,7 +32,6 @@ class _RegisterScreenState extends State<LoginScreen> {
           return;
         }
 
-        print('✅ Redirigiendo a primary');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sesión iniciada correctamente.')),
         );

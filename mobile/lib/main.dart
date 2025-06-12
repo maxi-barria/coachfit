@@ -49,7 +49,6 @@ class _MyAppState extends State<MyApp> {
     if (token == _lastToken) return;                // duplicado
     _lastToken = token;
 
-    debugPrint('🧭 deep-link con token $token');
 
     // ‼️ limpiamos la pila y reemplazamos por la pantalla de reset
     navigatorKey.currentState?.pushAndRemoveUntil(

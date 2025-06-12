@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mobile/models/exercise.dart';
 import 'package:mobile/services/exercise/exercise_service.dart';
 import 'package:mobile/widgets/ejercicios/exercise_item.dart';
+import '../../core/core.dart'; // incluye CustomAppBar y temas
 
 class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({super.key});
+
   @override
   State<ExerciseScreen> createState() => _ExerciseScreenState();
 }
@@ -33,7 +35,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       setState(() => isLoading = false);
       throw Exception('Error al cargar los ejercicios: $e');
     }
-    print('Ejercicios cargados: ${allExercises}');
   }
 
   @override
@@ -43,21 +44,16 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
 
+    final theme = Theme.of(context); 
+    final bgColor = theme.scaffoldBackgroundColor;
+    final surfaceColor = theme.colorScheme.surface;
+
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        backgroundColor: Colors.grey[200],
-        elevation: 0,
-        title: Text(
-          'Ejercicios',
-          style: TextStyle(
-            fontSize: 28,
-            color: Colors.black,
-          ),
-        ),
-      ),
+      backgroundColor: bgColor,
+      appBar: const CustomAppBar(title: 'Ejercicios', showBack: false),
       body: Column(
         children: [
+          const SizedBox(height: 16), 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
@@ -66,32 +62,35 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               },
               decoration: InputDecoration(
                 hintText: 'Buscar Ejercicio',
-                prefixIcon: Icon(Icons.search),
-                suffixIcon: Icon(Icons.filter_list),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: const Icon(Icons.filter_list),
                 filled: true,
-                fillColor: Colors.deepOrange[200],
+                fillColor: surfaceColor, 
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
               ),
+              style: theme.textTheme.bodyMedium, // usa texto del tema
             ),
           ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView.builder(
-            itemCount: filteredExercises.length,
-            itemBuilder: (context, index) {
-              final exercise = filteredExercises[index];
-              return ExerciseItem(
-                id: exercise.id,
-                gifUrl: exercise.gifUrl,
-                name: exercise.name,
-                muscleGroup: exercise.type,
-              );
-            },
+          const SizedBox(height: 10),
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: filteredExercises.length,
+                    itemBuilder: (context, index) {
+                      final exercise = filteredExercises[index];
+                      return ExerciseItem(
+                        id: exercise.id,
+                        gifUrl: exercise.gifUrl,
+                        name: exercise.name,
+                        muscleGroup: exercise.type,
+                      );
+                    },
+                  ),
           ),
-        ),
         ],
       ),
     );

@@ -145,4 +145,70 @@ export const getSummary = (
   await prisma.setSession.delete({ where: { id: setSessionId } });
   return { status: 200 };
 };
+export const getExerciseHistory = async (userId: string, exerciseId: string) => {
+  const sets = await prisma.setSession.findMany({
+    where: {
+      workoutExercise: {
+        exerciseId,
+        workout: { userId },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+    include: {
+      workoutSession: {
+        include: { workout: true },
+      },
+      intensityIndicator: true,
+    },
+  });
+
+  const grouped: Record<string, any[]> = {};
+
+  for (const set of sets) {
+    const sessionId = set.workoutSessionId;
+    if (!grouped[sessionId]) {
+      grouped[sessionId] = [];
+    }
+    grouped[sessionId].push({
+      date: set.workoutSession.startedAt,
+      workoutName: set.workoutSession.workout.name,
+      rep: set.rep,
+      weight: set.weight,
+      intensity: set.intensityIndicator
+        ? `${set.intensityIndicator.name} ${set.intensityIndicator.value}`
+        : null,
+    });
+  }
+
+  return Object.values(grouped); // <- esto ahora será List<List<SetData>> esperado por Flutter
+};
+export const getExercisePR = async (userId: string, exerciseId: string) => {
+  const pr = await prisma.setSession.findFirst({
+    where: {
+      workoutExercise: {
+        exerciseId,
+        workout: {
+          userId,
+        },
+      },
+    },
+    orderBy: {
+      weight: 'desc',
+    },
+    include: {
+      workoutSession: true,
+    },
+  });
+
+  if (!pr) return null;
+
+  const estimated1RM = Math.round(pr.weight * (1 + pr.rep / 30));
+
+  return {
+    weight: pr.weight,
+    reps: pr.rep,
+    estimated1RM,
+    date: pr.workoutSession.startedAt,
+  };
+};
 

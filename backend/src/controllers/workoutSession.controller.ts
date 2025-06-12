@@ -105,3 +105,18 @@ export const summary: RequestHandler = async (req, res, next) => {
     res.json(data)
   } catch (err) { next(err) }
 }
+export const getExerciseHistory: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const exerciseId = req.params.exerciseId;
+    if (!userId || !exerciseId) {
+      res.status(400).json({ message: 'Faltan parámetros' });
+      return;
+    }
+
+    const history = await WSvc.getExerciseHistory(userId, exerciseId);
+    res.json(history);
+  } catch (err) {
+    next(err);
+  }
+};

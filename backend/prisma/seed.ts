@@ -124,36 +124,59 @@ async function main() {
     ],
   })
 
-  /* 8. Sesión real de progreso ----------------------------------------- */
+  /* 8. Múltiples sesiones con progreso ---------------------------------- */
+const now = Date.now();
+const sessions = [];
+
+for (let i = 0; i < 5; i++) {
+  const start = new Date(now - i * 3 * 86400000); // cada 3 días hacia atrás
+  const end = new Date(start.getTime() + 3500 * 1000);
+
   const session = await prisma.workoutSession.create({
     data: {
       userId: user.id,
       workoutId: workout.id,
-      startedAt: new Date(),
-      endedAt: new Date(Date.now() + 3500_000),
+      startedAt: start,
+      endedAt: end,
       secondsDuration: 3500,
-      comment: 'Buenos resultados hoy 🚀',
+      comment: `Sesión del ${start.toDateString()}`,
     },
-  })
+  });
 
-  await prisma.setSession.createMany({
-    data: [
-      { workoutSessionId: session.id, workoutExerciseId: wExercise.id, rep: 12, weight: 0, restSeconds: 60, intensityIndicatorId: rpe8!.id },
-      { workoutSessionId: session.id, workoutExerciseId: wExercise.id, rep: 15, weight: 0, restSeconds: 90, intensityIndicatorId: rpe8!.id },
-    ],
-  })
+  const setsData = [
+    {
+      workoutSessionId: session.id,
+      workoutExerciseId: wExercise.id,
+      rep: 10 + i,
+      weight: 10 * i,
+      restSeconds: 60,
+      intensityIndicatorId: rpe8!.id,
+    },
+    {
+      workoutSessionId: session.id,
+      workoutExerciseId: wExercise.id,
+      rep: 12 + i,
+      weight: 10 * i,
+      restSeconds: 90,
+      intensityIndicatorId: rpe8!.id,
+    },
+  ];
 
-  /* 9. Summary automático ---------------------------------------------- */
+  await prisma.setSession.createMany({ data: setsData });
+
   await prisma.workoutSessionSummary.create({
     data: {
       workoutSessionId: session.id,
-      totalSets: 2,
-      totalReps: 27,
-      totalVolume: 0, // peso 0 × reps
+      totalSets: setsData.length,
+      totalReps: setsData.reduce((a, b) => a + b.rep, 0),
+      totalVolume: setsData.reduce((a, b) => a + b.rep * b.weight, 0),
     },
-  })
+  });
 
-  console.log('Datos de ejemplo y progreso creados')
+  sessions.push(session);
+}
+
+console.log('Historial de sesiones creado');
 }
 
 main()

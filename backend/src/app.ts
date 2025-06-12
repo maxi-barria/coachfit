@@ -6,7 +6,7 @@ import publicRoutes from './routes/public';
 import { registerRoutes } from './routes';
 import routineRoutes from './routes/routine.routes';
 import workoutSessionRoutes from './routes/workoutSession.routes'
-
+import progressRoutes from './routes/progress.routes'
 dotenv.config();
 
 const app = express();
@@ -18,6 +18,7 @@ app.use(publicRoutes);
 registerRoutes(app);
 app.use('/routines', routineRoutes);
 app.use('/workout-sessions', workoutSessionRoutes)
+app.use('/progress', progressRoutes)
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });

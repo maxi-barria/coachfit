@@ -21,7 +21,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('🎯 Token recibido en ResetPasswordScreen: ${widget.token}');
   }
 
   Future<void> _submit() async {
