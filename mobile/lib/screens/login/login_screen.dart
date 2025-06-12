@@ -1,12 +1,11 @@
+import 'package:mobile/providers/loggin_provider.dart';
 import 'package:mobile/themes/themes.dart';
 import 'package:mobile/widgets/core/button.dart';
 import 'package:mobile/widgets/login/login_form_field.dart';
 import 'package:flutter/material.dart';
-import '../services/auth/auth_service.dart';
-import 'package:mobile/screens/primary_screen.dart';
-import '../widgets/custom_app_bar.dart';
-
-final AuthService _authService = AuthService();
+import 'package:provider/provider.dart';
+import 'package:mobile/screens/login/primary_screen.dart';
+import '../../widgets/custom_app_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,25 +21,30 @@ class _RegisterScreenState extends State<LoginScreen> {
   void _login() async {
     if (_formKey.currentState!.validate()) {
       try {
-        final result = await _authService.login(
+        final result = await context.read<LogginProvider>().login(
           _emailController.text,
           _passwordController.text,
         );
+        if (!result) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión.')));
+          return;
+        }
+
         print('✅ Redirigiendo a primary');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sesión iniciada: ${result['token']}')),
+          SnackBar(content: Text('Sesión iniciada correctamente.')),
         );
 
-        Future.delayed(Duration(milliseconds: 100), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const PrimaryScreen()),
-          );
-        });
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+        Navigator.pushReplacementNamed(
+          context,
+          'main'
         );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -89,7 +93,7 @@ class _RegisterScreenState extends State<LoginScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/request-reset');
+                    Navigator.pushNamed(context, 'request-reset');
                   },
                   child: Text(
                     '¿Olvidaste tu contraseña?',
