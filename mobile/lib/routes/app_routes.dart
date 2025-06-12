@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import '../screens/screen.dart';
-import '../screens/reset_password_screen.dart'; 
-import '../screens/request_reset_screen.dart';
+import '../screens/core/screen.dart';
+import '../screens/login/reset_password_screen.dart'; 
+import '../screens/login/request_reset_screen.dart';
 
 class AppRoutes {
-  static const initialRoute = '/home';
-
+  static const initialRoute = 'home';
   static Map<String, Widget Function(BuildContext)> routes = {
-    '/login': (BuildContext context) => const LoginScreen(),
-    '/register': (BuildContext context) => const RegisterScreen(),
-    '/home': (BuildContext context) => const HomeScreen(),
-    '/primary': (BuildContext context) => const PrimaryScreen(),
-    '/error': (BuildContext context) => const ErrorScreen(),
-    '/request-reset': (BuildContext context) => const RequestResetScreen(),
+    'login': (BuildContext context) => const LoginScreen(),
+    'register': (BuildContext context) => const RegisterScreen(),
+    'home': (BuildContext context) => const HomeScreen(),
+    'error': (BuildContext context) => const ErrorScreen(),
+    'main': (BuildContext context) => const MainScreen(),
+    'request-reset': (BuildContext context) => const RequestResetScreen(),
+    'exercise_detail': (BuildContext context) => ExerciseDetailScreen(id: ModalRoute.of(context)!.settings.arguments as String),
   };
+  
 static Route<dynamic> onGenerateRoute(RouteSettings s) {
   if (s.name == '/reset' && s.arguments is String) {
     return MaterialPageRoute(
@@ -25,11 +26,4 @@ static Route<dynamic> onGenerateRoute(RouteSettings s) {
     return MaterialPageRoute(builder: (_) => const SizedBox.shrink());
   }
   return MaterialPageRoute(builder: (_) => const ErrorScreen());
-}
-
-
-
-
-
-
-}
+}}
