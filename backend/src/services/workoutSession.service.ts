@@ -1,76 +1,32 @@
 import { prisma } from '../prisma/client'
 import {
-  CreateWorkoutSessionInput,
-  UpdateWorkoutSessionInput,
-  AddSetSessionInput,
+  StartSessionInput,
+  AddSetInput,
+  EndSessionInput,
 } from '../validators/workoutSession.validator'
 
-/* ---------- Crear sesión ---------- */
-export const createWorkoutSession = (userId: string, data: CreateWorkoutSessionInput) =>
+/* ---------- Iniciar sesión ---------- */
+export const startSession = (userId: string, data: StartSessionInput) =>
   prisma.workoutSession.create({
     data: {
       userId,
       workoutId: data.workoutId,
-      date: data.date ? new Date(data.date) : undefined,
-      secondsDuration: data.secondsDuration ?? undefined,
-      comment: data.comment ?? undefined,
-    },
-    include: { workout: true },
-  })
-
-/* ---------- Listar sesiones del usuario ---------- */
-export const listWorkoutSessions = (userId: string, page = 1, limit = 20) =>
-  prisma.workoutSession.findMany({
-    where: { userId },
-    orderBy: { date: 'desc' },
-    skip: (page - 1) * limit,
-    take: limit,
-    include: { workout: true },
-  })
-
-/* ---------- Obtener una sesión ---------- */
-export const getWorkoutSession = (id: string, userId: string) =>
-  prisma.workoutSession.findFirst({
-    where: { id, userId },
-    include: {
-      workout: true,
-      setSessions: { include: { workoutExercise: { include: { exercise: true } } } },
-    },
-  })
-
-/* ---------- Actualizar sesión ---------- */
-export const updateWorkoutSession = async (
-  id: string,
-  data: UpdateWorkoutSessionInput,
-  userId: string,
-) => {
-  const updated = await prisma.workoutSession.updateMany({
-    where: { id, userId },
-    data: {
-      secondsDuration: data.secondsDuration ?? undefined,
       comment: data.comment ?? undefined,
     },
   })
-  return updated.count === 0 ? { status: 404 } : { status: 200 }
-}
 
-/* ---------- Borrar sesión ---------- */
-export const deleteWorkoutSession = (id: string, userId: string) =>
-  prisma.workoutSession.deleteMany({ where: { id, userId } })
-
-/* ---------- Agregar set a sesión ---------- */
-export const addSetToSession = async (
+/* ---------- Agregar set a la sesión ---------- */
+export const addSet = async (
   sessionId: string,
-  set: AddSetSessionInput,
   userId: string,
+  set: AddSetInput,
 ) => {
-  /* Verifica que la sesión pertenece al usuario */
   const session = await prisma.workoutSession.findFirst({
     where: { id: sessionId, userId },
   })
-  if (!session) return { status: 404, message: 'Session not found' }
+  if (!session) return { status: 404 }
 
-  const newSet = await prisma.setSession.create({
+  const created = await prisma.setSession.create({
     data: {
       workoutSessionId: sessionId,
       workoutExerciseId: set.workoutExerciseId,
@@ -80,22 +36,113 @@ export const addSetToSession = async (
       intensityIndicatorId: set.intensityIndicatorId ?? undefined,
     },
   })
-  return { status: 201, data: newSet }
+  return { status: 201, data: created }
 }
 
-/* ---------- Quitar set de sesión ---------- */
-export const removeSetFromSession = async (
+/* ---------- Cerrar sesión y generar summary ---------- */
+export const endSession = async (
+  sessionId: string,
+  userId: string,
+  data: EndSessionInput,
+) => {
+  const session = await prisma.workoutSession.findFirst({
+    where: { id: sessionId, userId },
+    include: { setSessions: true },
+  })
+  if (!session) return { status: 404 }
+
+  const totalSets   = session.setSessions.length
+  const totalReps   = session.setSessions.reduce((s, x) => s + x.rep, 0)
+  const totalVolume = session.setSessions.reduce((s, x) => s + x.rep * x.weight, 0)
+
+  await prisma.$transaction([
+    prisma.workoutSession.update({
+      where: { id: sessionId },
+      data: {
+        endedAt: new Date(),
+        secondsDuration: data.secondsDuration ?? session.secondsDuration,
+        comment: data.comment ?? session.comment,
+      },
+    }),
+    prisma.workoutSessionSummary.upsert({
+      where: { workoutSessionId: sessionId },
+      update: { totalVolume, totalSets, totalReps },
+      create: {
+        workoutSessionId: sessionId,
+        totalVolume,
+        totalSets,
+        totalReps,
+      },
+    }),
+  ])
+
+  return { status: 200 }
+}
+
+/* ---------- Listar sesiones ---------- */
+export const listSessions = (
+  userId: string,
+  page = 1,
+  limit = 20,
+) =>
+  prisma.workoutSession.findMany({
+    where: { userId },
+    orderBy: { startedAt: 'desc' },
+    skip: (page - 1) * limit,
+    take: limit,
+    include: { workout: true },
+  })
+
+/* ---------- Obtener sesión (detalle) ---------- */
+export const getSession = (id: string, userId: string) =>
+  prisma.workoutSession.findFirst({
+    where: { id, userId },
+    include: {
+      workout: true,
+      setSessions: {
+        include: {
+          workoutExercise: { include: { exercise: true } },
+        },
+      },
+      summary: true,
+    },
+  })
+
+/* ---------- Eliminar sesión ---------- */
+export const deleteSession = (id: string, userId: string) =>
+  prisma.workoutSession.deleteMany({ where: { id, userId } })
+
+/* ---------- Obtener resumen por rango de fechas ---------- */
+export const getSummary = (
+  userId: string,
+  from: Date,
+  to: Date,
+) =>
+  prisma.workoutSessionSummary.findMany({
+    where: {
+      workoutSession: {
+        userId,
+        startedAt: { gte: from, lte: to },
+      },
+    },
+    include: {
+      workoutSession: { select: { startedAt: true, workout: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  export const removeSetFromSession = async (
   setSessionId: string,
   userId: string,
 ) => {
-  /* Verifica propiedad del usuario */
   const set = await prisma.setSession.findUnique({
     where: { id: setSessionId },
     include: { workoutSession: true },
-  })
+  });
   if (!set || set.workoutSession.userId !== userId)
-    return { status: 404, message: 'Set not found or not yours' }
+    return { status: 404, message: 'Set not found or not yours' };
 
-  await prisma.setSession.delete({ where: { id: setSessionId } })
-  return { status: 200 }
-}
+  await prisma.setSession.delete({ where: { id: setSessionId } });
+  return { status: 200 };
+};
+

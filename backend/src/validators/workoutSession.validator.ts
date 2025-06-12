@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-/* ---------- Sub-esquema SetSession ---------- */
+/* ---------- Sub-esquema de Set realizado ---------- */
 export const setSessionSchema = z.object({
   workoutExerciseId: z.string().uuid(),
   rep: z.number().int().positive(),
@@ -9,28 +9,29 @@ export const setSessionSchema = z.object({
   intensityIndicatorId: z.string().uuid().optional(),
 })
 
-/* ---------- Crear sesión de workout ---------- */
-export const createWorkoutSessionSchema = z.object({
+/* ---------- Iniciar sesión de workout ---------- */
+export const startSessionSchema = z.object({
   workoutId: z.string().uuid(),
-  date: z.string().datetime().optional(),            // default: now()
-  secondsDuration: z.number().int().positive().optional(),
   comment: z.string().optional(),
 })
 
-/* ---------- Actualizar sesión ---------- */
-export const updateWorkoutSessionSchema = z
+/* ---------- Agregar set a la sesión ---------- */
+export const addSetSchema = setSessionSchema
+
+/* ---------- Cerrar / actualizar sesión ---------- */
+export const endSessionSchema = z
   .object({
-    secondsDuration: z.number().int().positive().optional(),
+    secondsDuration: z.number().int().positive().optional(), // duración real
     comment: z.string().optional(),
   })
-  .refine(d => Object.keys(d).length > 0, 'Envía al menos un campo')
-
-/* ---------- Agregar / quitar sets ---------- */
-export const addSetSessionSchema = setSessionSchema                     // body
-export const removeSetSessionSchema = z.object({ setSessionId: z.string().uuid() })
+  .refine(d => Object.keys(d).length > 0, 'Envía al menos un campo para cerrar la sesión')
+  
+export const removeSetSessionSchema = z.object({
+  setSessionId: z.string().uuid(),
+});
 
 /* ---------- Tipos ---------- */
-export type CreateWorkoutSessionInput = z.infer<typeof createWorkoutSessionSchema>
-export type UpdateWorkoutSessionInput = z.infer<typeof updateWorkoutSessionSchema>
-export type AddSetSessionInput = z.infer<typeof addSetSessionSchema>
+export type StartSessionInput = z.infer<typeof startSessionSchema>
+export type AddSetInput      = z.infer<typeof addSetSchema>
+export type EndSessionInput  = z.infer<typeof endSessionSchema>
 export type RemoveSetSessionInput = z.infer<typeof removeSetSessionSchema>

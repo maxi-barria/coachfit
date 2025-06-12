@@ -5,6 +5,7 @@ const prisma = new PrismaClient()
 async function main() {
   /* 1. Limpieza rápida -------------------------------------------------- */
   await prisma.$transaction([
+    prisma.workoutSessionSummary.deleteMany(),
     prisma.setSession.deleteMany(),
     prisma.workoutSession.deleteMany(),
     prisma.set.deleteMany(),
@@ -28,7 +29,7 @@ async function main() {
     create: {
       id: 'db2b0309-bcf7-4d59-be09-ca0a543e50ce',
       email: 'testuser@gmail.com',
-      password: '$2b$10$n9J4GMeY2t2D2w/4P4rawOlpSwnP7V9DQL6Jr9FtB5Bqi48c9bq4e', // hash demo
+      password: '$2b$10$n9J4GMeY2t2D2w/4P4rawOlpSwnP7V9DQL6Jr9FtB5Bqi48c9bq4e',
       rol: 'cliente',
     },
   })
@@ -43,7 +44,7 @@ async function main() {
   for (const m of musclesData) {
     const muscle = await prisma.muscle.create({ data: { name: m.name } })
     await prisma.musclePortion.createMany({
-      data: m.portions.map((p) => ({ name: p, muscleId: muscle.id })),
+      data: m.portions.map(p => ({ name: p, muscleId: muscle.id })),
     })
   }
   console.log('Músculos y porciones creados')
@@ -57,12 +58,12 @@ async function main() {
     ],
   })
 
-  /* 4 b. Vincular ejercicios ↔ porciones ------------------------------- */
+  /* 4b. Vincular ejercicios ↔ porciones -------------------------------- */
   const exercises = await prisma.exercise.findMany({ select: { id: true, name: true } })
-  const exerciseMap = Object.fromEntries(exercises.map(({ id, name }) => [name, id]))
+  const exerciseMap = Object.fromEntries(exercises.map(e => [e.name, e.id]))
 
   const portions = await prisma.musclePortion.findMany()
-  const portionId = (name: string) => portions.find(p => p.name === name)!.id
+  const portionId = (n: string) => portions.find(p => p.name === n)!.id
 
   await prisma.exerciseMusclePortion.createMany({
     data: [
@@ -74,7 +75,6 @@ async function main() {
     ],
     skipDuplicates: true,
   })
-  console.log('Ejercicios vinculados a porciones')
 
   /* 5. Indicadores de intensidad --------------------------------------- */
   await prisma.intensityIndicator.createMany({
@@ -114,11 +114,7 @@ async function main() {
   /* 7. Ejercicio dentro del workout ------------------------------------ */
   const pushUp = exercises.find(e => e.name === 'Push-up')!
   const wExercise = await prisma.workoutExercise.create({
-    data: {
-      workoutId: workout.id,
-      exerciseId: pushUp.id,
-      orden: 1,
-    },
+    data: { workoutId: workout.id, exerciseId: pushUp.id, orden: 1 },
   })
 
   await prisma.set.createMany({
@@ -133,6 +129,8 @@ async function main() {
     data: {
       userId: user.id,
       workoutId: workout.id,
+      startedAt: new Date(),
+      endedAt: new Date(Date.now() + 3500_000),
       secondsDuration: 3500,
       comment: 'Buenos resultados hoy 🚀',
     },
@@ -140,32 +138,28 @@ async function main() {
 
   await prisma.setSession.createMany({
     data: [
-      {
-        workoutSessionId: session.id,
-        workoutExerciseId: wExercise.id,
-        rep: 12,
-        weight: 0,
-        restSeconds: 60,
-        intensityIndicatorId: rpe8!.id,
-      },
-      {
-        workoutSessionId: session.id,
-        workoutExerciseId: wExercise.id,
-        rep: 15,
-        weight: 0,
-        restSeconds: 90,
-        intensityIndicatorId: rpe8!.id,
-      },
+      { workoutSessionId: session.id, workoutExerciseId: wExercise.id, rep: 12, weight: 0, restSeconds: 60, intensityIndicatorId: rpe8!.id },
+      { workoutSessionId: session.id, workoutExerciseId: wExercise.id, rep: 15, weight: 0, restSeconds: 90, intensityIndicatorId: rpe8!.id },
     ],
   })
 
-  console.log('Datos de progreso creados')
+  /* 9. Summary automático ---------------------------------------------- */
+  await prisma.workoutSessionSummary.create({
+    data: {
+      workoutSessionId: session.id,
+      totalSets: 2,
+      totalReps: 27,
+      totalVolume: 0, // peso 0 × reps
+    },
+  })
+
+  console.log('Datos de ejemplo y progreso creados')
 }
 
 main()
-  .then(() => {
+  .then(async () => {
     console.log('Seed finalizado')
-    return prisma.$disconnect()
+    await prisma.$disconnect()
   })
   .catch(async (e) => {
     console.error(e)
