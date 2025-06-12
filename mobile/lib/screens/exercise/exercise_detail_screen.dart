@@ -52,7 +52,7 @@ Widget build(BuildContext context) {
         centerTitle: true,
         title: Text(
           _isLoading ? '' : _exercise.name,
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
       body: _isLoading

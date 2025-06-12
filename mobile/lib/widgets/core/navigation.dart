@@ -41,8 +41,8 @@ class _NavigationState extends State<Navigation> {
             case 'coach':
               page = CoachScreen();
               break;
-            case 'train':
-              page = TrainScreen();
+            case 'routine':
+              page = RoutineScreen();
               break;
             case 'exercise':
               page = ExerciseScreen();

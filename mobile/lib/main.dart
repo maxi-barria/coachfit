@@ -19,7 +19,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final navigatorKey = GlobalKey<NavigatorState>();
   final _appLinks    = AppLinks();
-
   String? _lastToken;                       // evita dobles intents
 
   @override

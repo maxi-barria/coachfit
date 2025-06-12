@@ -6,6 +6,6 @@ export 'package:mobile/screens/coach/coach_screen.dart';
 export 'package:mobile/screens/profile/profile_screen.dart';
 export 'package:mobile/screens/exercise/exercise_screen.dart';
 export 'package:mobile/screens/exercise/exercise_detail_screen.dart';
-export 'package:mobile/screens/train/train_screen.dart';
+export 'package:mobile/screens/routine/routine_screen.dart';
 export 'package:mobile/screens/login/primary_screen.dart';
 export 'package:mobile/screens/core/main_screen.dart';

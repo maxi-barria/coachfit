@@ -52,7 +52,7 @@ model Exercise {
   userId     String?
   isCustom   Boolean  @default(false)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @updatedAt @default(now())
   difficulty String?
   equipment  String?
 

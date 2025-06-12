@@ -4,7 +4,8 @@ class MyTheme {
   static const Color primary   = Color.fromRGBO(255, 60, 0, 1);
   static const Color secondary = Color.fromRGBO(29, 31, 36, 1);
   static const Color darkBg    = Color(0xFF0F0F0F);   // negro “real”
-  static const Color darkSurf  = Color(0xFF1B1B1B);   // tarjetas / campos
+  static const Color darkSurf  = Color(0xFF1B1B1B); 
+  static const Color backgroundColor = Color(0xD3D3D3D3); // tarjetas / campos
 
   // ------------------ Tema claro (sin cambios mayores) ------------------ //
   static final ThemeData lightTheme = ThemeData(

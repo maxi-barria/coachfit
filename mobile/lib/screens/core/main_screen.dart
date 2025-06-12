@@ -13,7 +13,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _widgetOptions = [
     ProfileScreen(),
     CoachScreen(),
-    TrainScreen(),
+    RoutineScreen(),
     ExerciseScreen(),
   ];
 
