@@ -3,6 +3,7 @@ import '../screens/core/screen.dart';
 import '../screens/login/reset_password_screen.dart'; 
 import '../screens/login/request_reset_screen.dart';
 
+
 class AppRoutes {
   static const initialRoute = 'home';
   static Map<String, Widget Function(BuildContext)> routes = {
@@ -15,6 +16,18 @@ class AppRoutes {
   };
   
 static Route<dynamic> onGenerateRoute(RouteSettings s) {
+  if (s.name == 'exercise_form') {
+  final args = s.arguments;
+  if (args != null && args is Map<String, dynamic>) {
+    return MaterialPageRoute(
+      builder: (_) => ExerciseFormScreen(existingExercise: args),
+    );
+  }
+  return MaterialPageRoute(
+    builder: (_) => const ExerciseFormScreen(),
+  );
+}
+
   if (s.name == 'exercise_detail' && s.arguments is String) {
     return MaterialPageRoute(
       builder: (_) => ExerciseDetailScreen(id: s.arguments as String),

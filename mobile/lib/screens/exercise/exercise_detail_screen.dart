@@ -20,7 +20,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
     with TickerProviderStateMixin {
   final ExerciseService exerciseService = ExerciseService();
   late final String id = widget.id;
-  late Exercise _exercise;
+  Exercise? _exercise;
   bool _isLoading = true;
 
   @override
@@ -30,20 +30,22 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
   }
 
   Future<void> _loadExercise() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
     try {
-      final exercise = await exerciseService.getExerciseById(id);
+      final json = await exerciseService.getExerciseById(id);
       setState(() {
-        _exercise = exercise;
+        _exercise = Exercise.fromJson(json);
       });
     } catch (e) {
-
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar ejercicio: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -58,74 +60,98 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
       child: Scaffold(
         backgroundColor: bgColor,
         appBar: CustomAppBar(
-          title: _isLoading ? '' : _exercise.name,
+          title: _isLoading ? '' : _exercise?.name ?? 'Ejercicio',
           showBack: true,
         ),
         body: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(color: MyTheme.primary),
-              )
-            : Column(
-                children: [
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    child: Container(
-                      height: 40,
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
+            ? Center(child: CircularProgressIndicator(color: MyTheme.primary))
+            : _exercise == null
+                ? const Center(child: Text('No se encontró el ejercicio.'))
+                : Column(
+                    children: [
+                      const SizedBox(height: 8),
+                      ClipRRect(
                         borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        color: surfaceColor, 
-                      ),
-                      child: const TabBar(
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        dividerColor: Colors.transparent,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                          color: Color.fromRGBO(255, 61, 0, 0.2),
-                        ),
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.black,
-                        tabs: [
-                          TabItem(title: 'Detalle'),
-                          TabItem(title: 'Historial'),
-                          TabItem(title: 'Gráfico'),
-                          TabItem(title: 'Rp'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        SingleChildScrollView(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image(
-                                  image: NetworkImage(_exercise.gifUrl ?? ''),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _exercise.description,
-                                style: theme.textTheme.bodyMedium,
-                              ),
+                        child: Container(
+                          height: 40,
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.all(Radius.circular(10)),
+                            color: surfaceColor,
+                          ),
+                          child: const TabBar(
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            dividerColor: Colors.transparent,
+                            indicator: BoxDecoration(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              color: Color.fromRGBO(255, 61, 0, 0.2),
+                            ),
+                            labelColor: Colors.white,
+                            unselectedLabelColor: Colors.black,
+                            tabs: [
+                              TabItem(title: 'Detalle'),
+                              TabItem(title: 'Historial'),
+                              TabItem(title: 'Gráfico'),
+                              TabItem(title: 'Rp'),
                             ],
                           ),
                         ),
-                        ExerciseHistoryTab(exerciseId: _exercise.id),
-                        ExerciseProgressChart(exerciseId: _exercise.id),
-                        ExercisePRTab(exerciseId: _exercise.id),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            SingleChildScrollView(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (!_exercise!.isCustom)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange[100],
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Text('Ejercicio global', style: TextStyle(fontSize: 12)),
+                                    ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: _exercise!.gifUrl != null && _exercise!.gifUrl.toString().isNotEmpty
+                                        ? Image.network(
+                                            _exercise!.gifUrl,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (_, __, ___) => Container(
+                                              height: 200,
+                                              color: Colors.grey[300],
+                                              child: const Icon(Icons.broken_image, size: 40),
+                                            ),
+                                          )
+                                        : Container(
+                                            height: 200,
+                                            color: Colors.grey[300],
+                                            child: const Center(
+                                              child: Icon(Icons.image_not_supported, size: 40),
+                                            ),
+                                          ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _exercise!.description,
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ExerciseHistoryTab(exerciseId: _exercise!.id),
+                            ExerciseProgressChart(exerciseId: _exercise!.id),
+                            ExercisePRTab(exerciseId: _exercise!.id),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
       ),
     );
   }
