@@ -36,9 +36,9 @@ async function main() {
 
   /* 3. Músculos y porciones -------------------------------------------- */
   const musclesData = [
-    { name: 'Pecho',   portions: ['Pectoral mayor', 'Pectoral menor'] },
+    { name: 'Pecho', portions: ['Pectoral mayor', 'Pectoral menor'] },
     { name: 'Espalda', portions: ['Dorsal ancho', 'Trapecio'] },
-    { name: 'Pierna',  portions: ['Cuádriceps', 'Isquiotibiales'] },
+    { name: 'Pierna', portions: ['Cuádriceps', 'Isquiotibiales'] },
   ]
 
   for (const m of musclesData) {
@@ -54,7 +54,7 @@ async function main() {
     data: [
       { name: 'Push-up', type: 'bodyweight', isCustom: false },
       { name: 'Pull-up', type: 'bodyweight', isCustom: false },
-      { name: 'Squat',   type: 'bodyweight', isCustom: false },
+      { name: 'Squat', type: 'bodyweight', isCustom: false },
     ],
   })
 
@@ -67,11 +67,11 @@ async function main() {
 
   await prisma.exerciseMusclePortion.createMany({
     data: [
-      { exerciseId: exerciseMap['Push-up'], musclePortionId: portionId('Pectoral mayor'),  estimatedPercentage: 70 },
-      { exerciseId: exerciseMap['Push-up'], musclePortionId: portionId('Pectoral menor'),  estimatedPercentage: 30 },
-      { exerciseId: exerciseMap['Pull-up'], musclePortionId: portionId('Dorsal ancho'),    estimatedPercentage: 80 },
-      { exerciseId: exerciseMap['Squat'],   musclePortionId: portionId('Cuádriceps'),      estimatedPercentage: 70 },
-      { exerciseId: exerciseMap['Squat'],   musclePortionId: portionId('Isquiotibiales'),  estimatedPercentage: 30 },
+      { exerciseId: exerciseMap['Push-up'], musclePortionId: portionId('Pectoral mayor'), estimatedPercentage: 70 },
+      { exerciseId: exerciseMap['Push-up'], musclePortionId: portionId('Pectoral menor'), estimatedPercentage: 30 },
+      { exerciseId: exerciseMap['Pull-up'], musclePortionId: portionId('Dorsal ancho'), estimatedPercentage: 80 },
+      { exerciseId: exerciseMap['Squat'], musclePortionId: portionId('Cuádriceps'), estimatedPercentage: 70 },
+      { exerciseId: exerciseMap['Squat'], musclePortionId: portionId('Isquiotibiales'), estimatedPercentage: 30 },
     ],
     skipDuplicates: true,
   })
@@ -125,58 +125,112 @@ async function main() {
   })
 
   /* 8. Múltiples sesiones con progreso ---------------------------------- */
-const now = Date.now();
-const sessions = [];
+  const now = Date.now();
+  const sessions = [];
 
-for (let i = 0; i < 5; i++) {
-  const start = new Date(now - i * 3 * 86400000); // cada 3 días hacia atrás
-  const end = new Date(start.getTime() + 3500 * 1000);
+  for (let i = 0; i < 5; i++) {
+    const start = new Date(now - i * 3 * 86400000); // cada 3 días hacia atrás
+    const end = new Date(start.getTime() + 3500 * 1000);
 
-  const session = await prisma.workoutSession.create({
+    const session = await prisma.workoutSession.create({
+      data: {
+        userId: user.id,
+        workoutId: workout.id,
+        startedAt: start,
+        endedAt: end,
+        secondsDuration: 3500,
+        comment: `Sesión del ${start.toDateString()}`,
+      },
+    });
+
+    const setsData = [
+      {
+        workoutSessionId: session.id,
+        workoutExerciseId: wExercise.id,
+        rep: 10 + i,
+        weight: 10 * i,
+        restSeconds: 60,
+        intensityIndicatorId: rpe8!.id,
+      },
+      {
+        workoutSessionId: session.id,
+        workoutExerciseId: wExercise.id,
+        rep: 12 + i,
+        weight: 10 * i,
+        restSeconds: 90,
+        intensityIndicatorId: rpe8!.id,
+      },
+    ];
+
+    await prisma.setSession.createMany({ data: setsData });
+
+    await prisma.workoutSessionSummary.create({
+      data: {
+        workoutSessionId: session.id,
+        totalSets: setsData.length,
+        totalReps: setsData.reduce((a, b) => a + b.rep, 0),
+        totalVolume: setsData.reduce((a, b) => a + b.rep * b.weight, 0),
+      },
+    });
+
+    sessions.push(session);
+  }
+
+  console.log('Historial de sesiones creado');
+
+  /* 9. Usuarios adicionales (Coach y Cliente) ---------------------------- */
+  const coach = await prisma.user.create({
     data: {
-      userId: user.id,
-      workoutId: workout.id,
-      startedAt: start,
-      endedAt: end,
-      secondsDuration: 3500,
-      comment: `Sesión del ${start.toDateString()}`,
+      email: 'coach@example.com',
+      password: '$2b$10$n9J4GMeY2t2D2w/4P4rawOlpSwnP7V9DQL6Jr9FtB5Bqi48c9bq4e',
+      rol: 'coach',
     },
   });
 
-  const setsData = [
-    {
-      workoutSessionId: session.id,
-      workoutExerciseId: wExercise.id,
-      rep: 10 + i,
-      weight: 10 * i,
-      restSeconds: 60,
-      intensityIndicatorId: rpe8!.id,
-    },
-    {
-      workoutSessionId: session.id,
-      workoutExerciseId: wExercise.id,
-      rep: 12 + i,
-      weight: 10 * i,
-      restSeconds: 90,
-      intensityIndicatorId: rpe8!.id,
-    },
-  ];
-
-  await prisma.setSession.createMany({ data: setsData });
-
-  await prisma.workoutSessionSummary.create({
+  const client = await prisma.user.create({
     data: {
-      workoutSessionId: session.id,
-      totalSets: setsData.length,
-      totalReps: setsData.reduce((a, b) => a + b.rep, 0),
-      totalVolume: setsData.reduce((a, b) => a + b.rep * b.weight, 0),
+      email: 'cliente@example.com',
+      password: '$2b$10$n9J4GMeY2t2D2w/4P4rawOlpSwnP7V9DQL6Jr9FtB5Bqi48c9bq4e',
+      rol: 'cliente',
     },
   });
 
-  sessions.push(session);
-}
+  /* 10. Relación Coach ↔ Cliente ---------------------------------------- */
+  const coachClient = await prisma.coachClient.create({
+    data: {
+      coachId: coach.id,
+      clientId: client.id,
+      note: 'Cliente motivado, trabajar enfoque en técnica.',
+      startDate: new Date(Date.now() - 5 * 86400000), // hace 5 días
+    },
+  });
 
-console.log('Historial de sesiones creado');
+  /* 11. Nota del coach al cliente ---------------------------------------- */
+  await prisma.note.create({
+    data: {
+      coachId: coach.id,
+      userId: client.id,
+      content: 'Hoy progresó bastante en la sentadilla.',
+    },
+  });
+
+  /* 12. Estados de invitación y ejemplo ---------------------------------- */
+  const statePending = await prisma.state.create({ data: { value: 'pending' } });
+  const stateAccepted = await prisma.state.create({ data: { value: 'accepted' } });
+
+  await prisma.coachInvitation.create({
+    data: {
+      coachId: coach.id,
+      emailClient: 'nuevo_cliente@example.com',
+      token: 'token-de-ejemplo',
+      expirationDate: new Date(Date.now() + 7 * 86400000), // vence en 7 días
+      stateId: statePending.id,
+    },
+  });
+
+  console.log('Relaciones coach-cliente creadas');
+
+
 }
 
 main()

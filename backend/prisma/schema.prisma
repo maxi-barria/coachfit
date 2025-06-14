@@ -21,6 +21,17 @@ model User {
   routines        Routine[]
   workouts        Workout[]
   workoutSessions WorkoutSession[]
+
+  // Relaciones Coach - Client
+  coachClients  CoachClient[] @relation("Coach")
+  clientCoaches CoachClient[] @relation("Client")
+
+  // Relaciones con invitaciones
+  coachInvitations CoachInvitation[]
+
+  // Notas
+  notesAsUser  Note[] @relation("NoteUser")
+  notesAsCoach Note[] @relation("NoteCoach")
 }
 
 /**
@@ -173,12 +184,12 @@ model SetSession {
   restSeconds          Int
   intensityIndicatorId String?
   createdAt            DateTime @default(now())
+  exerciseId           String?
 
   workoutSession     WorkoutSession      @relation(fields: [workoutSessionId], references: [id])
   workoutExercise    WorkoutExercise     @relation(fields: [workoutExerciseId], references: [id])
   intensityIndicator IntensityIndicator? @relation(fields: [intensityIndicatorId], references: [id])
   Exercise           Exercise?           @relation(fields: [exerciseId], references: [id])
-  exerciseId         String?
 }
 
 model WorkoutSessionSummary {
@@ -203,4 +214,53 @@ model IntensityIndicator {
   description String?
   sets        Set[]
   setSessions SetSession[]
+}
+
+/**
+ * ---------- Funcionalidad Coach ----------
+ */
+
+model CoachClient {
+  id        String    @id @default(uuid())
+  coachId   String
+  clientId  String
+  note      String?
+  startDate DateTime
+  endDate   DateTime?
+
+  coach  User @relation("Coach", fields: [coachId], references: [id])
+  client User @relation("Client", fields: [clientId], references: [id])
+
+  @@unique([coachId, clientId])
+}
+
+model CoachInvitation {
+  id             String   @id @default(uuid())
+  coachId        String
+  emailClient    String
+  token          String   @unique
+  stateId        String
+  createDate     DateTime @default(now())
+  expirationDate DateTime
+
+  coach User  @relation(fields: [coachId], references: [id])
+  state State @relation(fields: [stateId], references: [id])
+}
+
+model Note {
+  id      String   @id @default(uuid())
+  userId  String
+  coachId String
+  content String
+  date    DateTime @default(now())
+
+  user  User @relation("NoteUser", fields: [userId], references: [id])
+  coach User @relation("NoteCoach", fields: [coachId], references: [id])
+}
+
+model State {
+  id    String @id @default(uuid())
+  value String
+
+  invitations CoachInvitation[]
 }
