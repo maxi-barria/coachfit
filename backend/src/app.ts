@@ -5,22 +5,30 @@ import authRoutes from './middlewares/auth';
 import publicRoutes from './routes/public';
 import { registerRoutes } from './routes';
 import routineRoutes from './routes/routine.routes';
-import workoutSessionRoutes from './routes/workoutSession.routes'
-import progressRoutes from './routes/progress.routes'
+import workoutSessionRoutes from './routes/workoutSession.routes';
+import progressRoutes from './routes/progress.routes';
 import coachClientRoutes from './routes/coachClient.routes';
+
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Rutas públicas y de autenticación
 app.use('/auth', authRoutes);
 app.use(publicRoutes);
+
+// Rutas protegidas registradas dinámicamente
 registerRoutes(app);
+
+// Rutas específicas
 app.use('/routines', routineRoutes);
-app.use('/workout-sessions', workoutSessionRoutes)
-app.use('/progress', progressRoutes)
+app.use('/workout-sessions', workoutSessionRoutes);
+app.use('/progress', progressRoutes);
 app.use('/coach-clients', coachClientRoutes);
+
+// Servidor
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });

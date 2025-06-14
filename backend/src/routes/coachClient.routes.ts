@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import { CoachClientController } from '../controllers/coachClient.controller';
+import * as CoachClientController from '../controllers/coachClient.controller';
+
 
 const router = Router();
-const controller = new CoachClientController();
 
-router.get('/:coachId', controller.getAll);
-router.get('/detail/:id', controller.getById);
-router.post('/', controller.create);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
+router.get('/:coachId', CoachClientController.listCoachClients);
+router.get('/detail/:id', CoachClientController.getCoachClient);
+router.post('/', CoachClientController.createCoachClient);
+router.put('/:id', CoachClientController.updateCoachClient);
+router.delete('/:id', CoachClientController.deleteCoachClient);
+
 
 export default router;

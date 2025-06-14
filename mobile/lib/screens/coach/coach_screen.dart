@@ -3,6 +3,7 @@ import 'package:mobile/models/coach_client.dart';
 import 'package:mobile/services/coach/coach_client_service.dart';
 import 'package:mobile/services/coach/coach_invitation_service.dart';
 import 'package:mobile/themes/themes.dart';
+import 'package:mobile/widgets/custom_app_bar.dart';
 import '../../widgets/coach/coach_client_item.dart';
 
 class CoachScreen extends StatefulWidget {
@@ -38,91 +39,107 @@ class _CoachScreenState extends State<CoachScreen> {
       setState(() => isLoading = false);
     }
   }
+
   void _showInviteDialog() {
-  final TextEditingController emailController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
 
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: MyTheme.darkSurf,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Invitar cliente', style: TextStyle(color: Colors.white)),
-      content: TextField(
-        controller: emailController,
-        keyboardType: TextInputType.emailAddress,
-        decoration: const InputDecoration(
-          labelText: 'Correo del cliente',
-          labelStyle: TextStyle(color: Colors.white),
-        ),
-        style: const TextStyle(color: Colors.white),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () async {
-            final email = emailController.text.trim();
-            if (email.isEmpty || !email.contains('@')) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Correo no válido')),
-              );
-              return;
-            }
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: MyTheme.darkSurf,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Invitar cliente',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Correo del cliente',
+                labelStyle: TextStyle(color: Colors.white),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final email = emailController.text.trim();
+                  if (email.isEmpty || !email.contains('@')) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Correo no válido')),
+                    );
+                    return;
+                  }
 
-            Navigator.pop(context);
-            try {
-              await CoachInvitationService().sendInvitation(
-                coachId: widget.coachId,
-                email: email,
-                token: widget.token,
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Invitación enviada')),
-              );
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${e.toString()}')),
-              );
-            }
-          },
-          child: const Text('Enviar'),
-        ),
-      ],
-    ),
-  );
-}
-
+                  Navigator.pop(context);
+                  try {
+                    await CoachInvitationService().sendInvitation(
+                      coachId: widget.coachId,
+                      email: email,
+                      token: widget.token,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invitación enviada')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: ${e.toString()}')),
+                    );
+                  }
+                },
+                child: const Text('Enviar'),
+              ),
+            ],
+          ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MyTheme.darkBg,
-      appBar: AppBar(
-        backgroundColor: MyTheme.darkBg,
-        foregroundColor: Colors.white,
-        title: const Text("Mis clientes"),
+      appBar: CustomAppBar(
+        title: 'Mis clientes',
+        showBack: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_alt),
-            onPressed: () {
-              _showInviteDialog();
-            },
+            onPressed: _showInviteDialog,
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : clients.isEmpty
-              ? const Center(child: Text("Sin clientes aún", style: TextStyle(color: Colors.white)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: clients.length,
-                  itemBuilder: (_, index) {
-                    return CoachClientItem(client: clients[index]);
-                  },
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : clients.isEmpty
+              ? const Center(
+                child: Text(
+                  "Sin clientes aún",
+                  style: TextStyle(color: Colors.white),
                 ),
+              )
+              : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: clients.length,
+                itemBuilder: (_, index) {
+                  return CoachClientItem(
+                    client: clients[index],
+                    onClientDeleted: (id) {
+                      setState(() {
+                        clients.removeWhere((c) => c.id == id);
+                      });
+                    },
+                  );
+                },
+              ),
     );
   }
 }

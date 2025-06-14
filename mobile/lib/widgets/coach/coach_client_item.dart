@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/models/coach_client.dart';
 import 'package:mobile/themes/themes.dart';
+import 'package:mobile/screens/coach/client_detail_screen.dart';
 
 class CoachClientItem extends StatelessWidget {
   final CoachClient client;
+  final void Function(String clientId)? onClientDeleted;
 
-  const CoachClientItem({super.key, required this.client});
+  const CoachClientItem({
+    super.key,
+    required this.client,
+    this.onClientDeleted,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +20,18 @@ class CoachClientItem extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        onTap: () async {
+          final wasDeleted = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ClientDetailScreen(client: client),
+            ),
+          );
+
+          if (wasDeleted == true) {
+            onClientDeleted?.call(client.id);
+          }
+        },
         leading: CircleAvatar(
           backgroundColor: MyTheme.primary.withOpacity(0.1),
           child: const Icon(Icons.person, color: MyTheme.primary),
@@ -23,27 +41,7 @@ class CoachClientItem extends StatelessWidget {
           client.note ?? "Sin nota",
           style: TextStyle(color: Colors.grey[400], fontSize: 13),
         ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
-          onSelected: (value) {
-            switch (value) {
-              case 'rutina':
-                // TODO: ir a rutina
-                break;
-              case 'progreso':
-                // TODO: ir a progreso
-                break;
-              case 'desvincular':
-                // TODO: confirmar y eliminar
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'rutina', child: Text('Ver rutina')),
-            const PopupMenuItem(value: 'progreso', child: Text('Ver progreso')),
-            const PopupMenuItem(value: 'desvincular', child: Text('Desvincular')),
-          ],
-        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
       ),
     );
   }

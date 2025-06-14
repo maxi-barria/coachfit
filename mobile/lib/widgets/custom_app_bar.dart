@@ -4,11 +4,13 @@ import '../themes/themes.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showBack;
+  final List<Widget>? actions; 
 
   const CustomAppBar({
     super.key,
     required this.title,
     this.showBack = true,
+    this.actions, 
   });
 
   @override
@@ -48,7 +50,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
             )
-          : const SizedBox.shrink(),
+          : null,
       title: Text(
         title,
         style: const TextStyle(
@@ -57,9 +59,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       centerTitle: true,
+      actions: actions,
       bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(16), // altura del espacio
-        child: SizedBox(height: 16), // espacio visible
+        preferredSize: Size.fromHeight(16),
+        child: SizedBox(height: 16),
       ),
     );
   }

@@ -1,56 +1,88 @@
-import { Request, Response } from "express";
-import { CoachClientService } from "../services/coachClient.service";
 
-const service = new CoachClientService();
+import { RequestHandler } from 'express'
+import { CoachClientService } from '../services/coachClient.service'
+import {
+  createCoachClientSchema,
+  updateCoachClientSchema,
+} from '../validators/coachClient.validator'
 
-export class CoachClientController {
-    async getAll(req: Request, res: Response) {
-        try {
-            const coachId = req.params.coachId;
-            const clients = await service.getAll(coachId);
-            res.json(clients);
-        } catch (err) {
-            res.status(500).json({ error: "Error al obtener clientes" });
-        }
+const service = new CoachClientService()
+
+/* --------- LIST ALL (coach) ------------------------ */
+export const listCoachClients: RequestHandler = async (req, res, next) => {
+  try {
+    const coachId = req.params.coachId
+    if (!coachId) {
+      res.status(400).json({ message: 'Falta coachId' })
+      return
     }
 
-    async create(req: Request, res: Response) {
-        try {
-            const data = req.body;
-            const client = await service.create(data);
-            res.status(201).json(client);
-        } catch (err) {
-            res.status(500).json({ error: "Error al crear relación coach-cliente" });
-        }
+    const data = await service.getAll(coachId)
+    res.json(data)
+    return
+  } catch (err) {
+    next(err)
+  }
+}
+
+/* --------- GET BY ID ------------------------------- */
+export const getCoachClient: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const data = await service.getById(id)
+
+    if (!data) {
+      res.status(404).json({ message: 'Relación no encontrada' })
+      return
     }
 
-    async update(req: Request, res: Response) {
-        try {
-            const id = req.params.id;
-            const updated = await service.update(id, req.body);
-            res.json(updated);
-        } catch (err) {
-            res.status(500).json({ error: "Error al actualizar cliente" });
-        }
+    res.json(data)
+    return
+  } catch (err) {
+    next(err)
+  }
+}
+
+/* --------- CREATE --------------------------------- */
+export const createCoachClient: RequestHandler = async (req, res, next) => {
+  try {
+    const parsed = createCoachClientSchema.parse(req.body)
+    const created = await service.create(parsed)
+    res.status(201).json(created)
+    return
+  } catch (err) {
+    next(err)
+  }
+}
+
+/* --------- UPDATE --------------------------------- */
+export const updateCoachClient: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const data = updateCoachClientSchema.parse(req.body)
+
+    const updated = await service.update(id, data)
+    if (!updated) {
+      res.status(404).json({ message: 'Relación no encontrada' })
+      return
     }
 
-    async delete(req: Request, res: Response) {
-        try {
-            const id = req.params.id;
-            await service.delete(id);
-            res.status(204).send();
-        } catch (err) {
-            res.status(500).json({ error: "Error al eliminar cliente" });
-        }
-    }
+    res.json(updated)
+    return
+  } catch (err) {
+    next(err)
+  }
+}
 
-    async getById(req: Request, res: Response) {
-        try {
-            const id = req.params.id;
-            const client = await service.getById(id);
-            res.json(client);
-        } catch (err) {
-            res.status(500).json({ error: "Error al obtener cliente" });
-        }
-    }
+/* --------- DELETE --------------------------------- */
+export const deleteCoachClient: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    await service.delete(id)
+    res.status(204).send()
+    return
+  } catch (err: any) {
+    res.status(404).json({ message: err.message || 'Relación no encontrada' })
+    return
+  }
 }

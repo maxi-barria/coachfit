@@ -24,4 +24,16 @@ class CoachClientService {
       throw Exception('Error al obtener clientes: ${response.body}');
     }
   }
+  Future<void> deleteClient(String clientId, String token) async {
+  final url = Uri.parse('$baseUrl/coach-clients/$clientId');
+  final response = await http.delete(url, headers: {
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+  });
+
+  if (response.statusCode != 204) {
+    throw Exception('Error al eliminar cliente');
+  }
+}
+
 }

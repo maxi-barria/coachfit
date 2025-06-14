@@ -22,21 +22,12 @@ model User {
   workouts        Workout[]
   workoutSessions WorkoutSession[]
 
-  // Relaciones Coach - Client
-  coachClients  CoachClient[] @relation("Coach")
-  clientCoaches CoachClient[] @relation("Client")
-
-  // Relaciones con invitaciones
+  coachClients    CoachClient[] @relation("Coach")
+  clientCoaches   CoachClient[] @relation("Client")
   coachInvitations CoachInvitation[]
-
-  // Notas
-  notesAsUser  Note[] @relation("NoteUser")
-  notesAsCoach Note[] @relation("NoteCoach")
+  notesAsUser     Note[] @relation("NoteUser")
+  notesAsCoach    Note[] @relation("NoteCoach")
 }
-
-/**
- * ---------- Catálogos y core ----------
- */
 
 model Muscle {
   id       String          @id @default(uuid())
@@ -52,7 +43,7 @@ model MusclePortion {
   isCustom Boolean @default(false)
 
   muscle                 Muscle                  @relation(fields: [muscleId], references: [id])
-  user                   User?                   @relation(fields: [userId], references: [id])
+  user                   User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   exerciseMusclePortions ExerciseMusclePortion[]
 }
 
@@ -62,17 +53,16 @@ model Exercise {
   description     String?
   type            String?
   secondsDuration Int?
+  userId          String?
+  isCustom        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  difficulty      String?
+  equipment       String?
+  videoUrl        String?
+  thumbnail       String?
 
-  userId     String?
-  isCustom   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  difficulty String?
-  equipment  String?
-  videoUrl   String?
-  thumbnail  String?
-
-  user                   User?                   @relation(fields: [userId], references: [id])
+  user                   User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   exerciseMusclePortions ExerciseMusclePortion[]
   workoutExercises       WorkoutExercise[]
   setSessions            SetSession[]
@@ -101,7 +91,7 @@ model Routine {
   version   Int
   createdAt DateTime @default(now())
 
-  user            User             @relation(fields: [userId], references: [id])
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   routineWorkouts RoutineWorkout[]
 }
 
@@ -125,7 +115,7 @@ model Workout {
   note            String?
   secondsDuration Int?
 
-  user             User              @relation(fields: [userId], references: [id])
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   workoutExercises WorkoutExercise[]
   routineWorkouts  RoutineWorkout[]
   workoutSessions  WorkoutSession[]
@@ -156,10 +146,6 @@ model Set {
   intensityIndicator IntensityIndicator? @relation(fields: [intensityIndicatorId], references: [id])
 }
 
-/**
- * ---------- Progreso del usuario ----------
- */
-
 model WorkoutSession {
   id              String    @id @default(uuid())
   userId          String
@@ -169,7 +155,7 @@ model WorkoutSession {
   secondsDuration Int?
   comment         String?
 
-  user        User                   @relation(fields: [userId], references: [id])
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout     Workout                @relation(fields: [workoutId], references: [id])
   setSessions SetSession[]
   summary     WorkoutSessionSummary?
@@ -203,10 +189,6 @@ model WorkoutSessionSummary {
   workoutSession WorkoutSession @relation(fields: [workoutSessionId], references: [id])
 }
 
-/**
- * ---------- Catálogo de intensidad ----------
- */
-
 model IntensityIndicator {
   id          String       @id @default(uuid())
   name        String
@@ -216,10 +198,6 @@ model IntensityIndicator {
   setSessions SetSession[]
 }
 
-/**
- * ---------- Funcionalidad Coach ----------
- */
-
 model CoachClient {
   id        String    @id @default(uuid())
   coachId   String
@@ -228,8 +206,8 @@ model CoachClient {
   startDate DateTime
   endDate   DateTime?
 
-  coach  User @relation("Coach", fields: [coachId], references: [id])
-  client User @relation("Client", fields: [clientId], references: [id])
+  coach  User @relation("Coach", fields: [coachId], references: [id], onDelete: Cascade)
+  client User @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
 
   @@unique([coachId, clientId])
 }
@@ -243,7 +221,7 @@ model CoachInvitation {
   createDate     DateTime @default(now())
   expirationDate DateTime
 
-  coach User  @relation(fields: [coachId], references: [id])
+  coach User  @relation(fields: [coachId], references: [id], onDelete: Cascade)
   state State @relation(fields: [stateId], references: [id])
 }
 
@@ -254,8 +232,8 @@ model Note {
   content String
   date    DateTime @default(now())
 
-  user  User @relation("NoteUser", fields: [userId], references: [id])
-  coach User @relation("NoteCoach", fields: [coachId], references: [id])
+  user  User @relation("NoteUser", fields: [userId], references: [id], onDelete: Cascade)
+  coach User @relation("NoteCoach", fields: [coachId], references: [id], onDelete: Cascade)
 }
 
 model State {
