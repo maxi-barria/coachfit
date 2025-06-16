@@ -40,25 +40,55 @@ export const updateExercise = async (
   data: UpdateExerciseInput,
   userId: string,
 ) => {
-  const existing = await prisma.exercise.findUnique({ where: { id } })
-  if (!existing) return { status: 404, message: 'Not found' }
-
-  if (!existing.userId) {
-    const copy = await prisma.exercise.create({
-      data: { ...existing, ...data, id: undefined, userId, isCustom: true },
-    })
-    return { status: 201, data: copy }
+  const existing = await prisma.exercise.findUnique({ where: { id } });
+  if (!existing) {
+    return {
+      status: 404,
+      message: 'Exercise not found',
+    };
   }
 
+  // Si el ejercicio es global (sin userId), se clona como personalizado
+  if (!existing.userId) {
+    const copy = await prisma.exercise.create({
+      data: {
+        ...existing,
+        ...data,
+        id: undefined,        // genera nuevo ID
+        userId,
+        isCustom: true,
+      },
+    });
+
+    return {
+      status: 201,
+      message: 'Exercise cloned and updated',
+      data: copy,
+    };
+  }
+
+  // Si el ejercicio pertenece al usuario, se actualiza directamente
   const updated = await prisma.exercise.updateMany({
     where: { id, userId },
     data,
-  })
+  });
 
-  return updated.count === 0
-    ? { status: 404, message: 'Not found or not yours' }
-    : { status: 200 }
-}
+  if (updated.count === 0) {
+    return {
+      status: 404,
+      message: 'Exercise not found or not owned by user',
+    };
+  }
+
+  const updatedExercise = await prisma.exercise.findUnique({ where: { id } });
+
+  return {
+    status: 200,
+    message: 'Exercise updated successfully',
+    data: updatedExercise,
+  };
+};
+
 
 /** Elimina solo la versión del usuario */
 export const deleteExercise = (id: string, userId: string) =>

@@ -21,11 +21,13 @@ model User {
   routines        Routine[]
   workouts        Workout[]
   workoutSessions WorkoutSession[]
-}
 
-/**
- * ---------- Catálogos y core ----------
- */
+  coachClients    CoachClient[] @relation("Coach")
+  clientCoaches   CoachClient[] @relation("Client")
+  coachInvitations CoachInvitation[]
+  notesAsUser     Note[] @relation("NoteUser")
+  notesAsCoach    Note[] @relation("NoteCoach")
+}
 
 model Muscle {
   id       String          @id @default(uuid())
@@ -41,7 +43,7 @@ model MusclePortion {
   isCustom Boolean @default(false)
 
   muscle                 Muscle                  @relation(fields: [muscleId], references: [id])
-  user                   User?                   @relation(fields: [userId], references: [id])
+  user                   User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   exerciseMusclePortions ExerciseMusclePortion[]
 }
 
@@ -53,15 +55,17 @@ model Exercise {
   imageUrl        String?
   gifUrl          String?
   secondsDuration Int?
+  userId          String?
+  isCustom        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  difficulty      String?
+  equipment       String?
+  videoUrl        String?
+  thumbnail       String?
 
-  userId     String?
-  isCustom   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-  difficulty String?
-  equipment  String?
+  user                   User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user                   User?                   @relation(fields: [userId], references: [id])
   exerciseMusclePortions ExerciseMusclePortion[]
   workoutExercises       WorkoutExercise[]
   setSessions            SetSession[]
@@ -90,7 +94,7 @@ model Routine {
   version   Int
   createdAt DateTime @default(now())
 
-  user            User             @relation(fields: [userId], references: [id])
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   routineWorkouts RoutineWorkout[]
 }
 
@@ -114,7 +118,7 @@ model Workout {
   note            String?
   secondsDuration Int?
 
-  user             User              @relation(fields: [userId], references: [id])
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   workoutExercises WorkoutExercise[]
   routineWorkouts  RoutineWorkout[]
   workoutSessions  WorkoutSession[]
@@ -145,10 +149,6 @@ model Set {
   intensityIndicator IntensityIndicator? @relation(fields: [intensityIndicatorId], references: [id])
 }
 
-/**
- * ---------- Progreso del usuario ----------
- */
-
 model WorkoutSession {
   id              String    @id @default(uuid())
   userId          String
@@ -158,7 +158,7 @@ model WorkoutSession {
   secondsDuration Int?
   comment         String?
 
-  user        User                   @relation(fields: [userId], references: [id])
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout     Workout                @relation(fields: [workoutId], references: [id])
   setSessions SetSession[]
   summary     WorkoutSessionSummary?
@@ -173,12 +173,12 @@ model SetSession {
   restSeconds          Int
   intensityIndicatorId String?
   createdAt            DateTime @default(now())
+  exerciseId           String?
 
   workoutSession     WorkoutSession      @relation(fields: [workoutSessionId], references: [id])
   workoutExercise    WorkoutExercise     @relation(fields: [workoutExerciseId], references: [id])
   intensityIndicator IntensityIndicator? @relation(fields: [intensityIndicatorId], references: [id])
   Exercise           Exercise?           @relation(fields: [exerciseId], references: [id])
-  exerciseId         String?
 }
 
 model WorkoutSessionSummary {
@@ -192,10 +192,6 @@ model WorkoutSessionSummary {
   workoutSession WorkoutSession @relation(fields: [workoutSessionId], references: [id])
 }
 
-/**
- * ---------- Catálogo de intensidad ----------
- */
-
 model IntensityIndicator {
   id          String       @id @default(uuid())
   name        String
@@ -203,4 +199,49 @@ model IntensityIndicator {
   description String?
   sets        Set[]
   setSessions SetSession[]
+}
+
+model CoachClient {
+  id        String    @id @default(uuid())
+  coachId   String
+  clientId  String
+  note      String?
+  startDate DateTime
+  endDate   DateTime?
+
+  coach  User @relation("Coach", fields: [coachId], references: [id], onDelete: Cascade)
+  client User @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([coachId, clientId])
+}
+
+model CoachInvitation {
+  id             String   @id @default(uuid())
+  coachId        String
+  emailClient    String
+  token          String   @unique
+  stateId        String
+  createDate     DateTime @default(now())
+  expirationDate DateTime
+
+  coach User  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  state State @relation(fields: [stateId], references: [id])
+}
+
+model Note {
+  id      String   @id @default(uuid())
+  userId  String
+  coachId String
+  content String
+  date    DateTime @default(now())
+
+  user  User @relation("NoteUser", fields: [userId], references: [id], onDelete: Cascade)
+  coach User @relation("NoteCoach", fields: [coachId], references: [id], onDelete: Cascade)
+}
+
+model State {
+  id    String @id @default(uuid())
+  value String
+
+  invitations CoachInvitation[]
 }

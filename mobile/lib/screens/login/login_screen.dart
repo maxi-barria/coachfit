@@ -32,7 +32,6 @@ class _RegisterScreenState extends State<LoginScreen> {
           return;
         }
 
-        print('✅ Redirigiendo a primary');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sesión iniciada correctamente.')),
         );
@@ -53,7 +52,7 @@ class _RegisterScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(29, 31, 36, 1),
-      appBar: const CustomAppBar(title: 'Iniciar Sesión'),
+      appBar: const CustomAppBar(title: 'Iniciar Sesión', showBack: false),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(

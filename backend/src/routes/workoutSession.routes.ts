@@ -11,6 +11,7 @@ router.get('/',  WCtrl.listSessions)     // listar
 router.get('/:id', WCtrl.getSession)     // detalle
 router.put('/:sessionId/end', WCtrl.end) // cerrar sesión
 router.delete('/:id', WCtrl.deleteSession)
+router.get('/exercise/:exerciseId/history', WCtrl.getExerciseHistory);
 
 /* Sets dentro de la sesión */
 router.post('/:sessionId/sets',  WCtrl.addSet)

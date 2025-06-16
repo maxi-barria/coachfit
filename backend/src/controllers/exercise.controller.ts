@@ -57,20 +57,31 @@ export const getExercise: RequestHandler = async (req, res, next) => {
 /* -------- UPDATE -------- */
 export const updateExercise: RequestHandler = async (req, res, next) => {
   try {
-    const userId = req.user?.id
-    const data = updateExerciseSchema.parse(req.body)
+    const userId = req.user?.id;
+    const data = updateExerciseSchema.parse(req.body);
 
-    const result = await ExerciseService.updateExercise(req.params.id, data, userId ?? '')
+    const result = await ExerciseService.updateExercise(req.params.id, data, userId ?? '');
 
     if (result.status === 404) {
-      res.status(404).json({ message: 'Not found or not yours' })
-      return
+      res.status(404).json({
+        status: 404,
+        message: 'Exercise not found or not owned by user',
+      });
+      return; 
     }
-    res.json({ message: 'Updated' })
+
+    res.status(result.status).json({
+      status: result.status,
+      message: result.message,
+      data: result.data,
+    });
+    return; 
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
+
+
 
 /* -------- DELETE -------- */
 export const deleteExercise: RequestHandler = async (req, res, next) => {
