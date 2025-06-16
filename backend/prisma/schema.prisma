@@ -51,13 +51,13 @@ model Exercise {
   description     String?
   type            String?
   imageUrl        String?
-  gifUrl        String?
+  gifUrl          String?
   secondsDuration Int?
 
   userId     String?
   isCustom   Boolean  @default(false)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
   difficulty String?
   equipment  String?
 
