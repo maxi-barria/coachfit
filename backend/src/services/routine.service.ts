@@ -1,4 +1,3 @@
-import { create } from 'domain';
 import { prisma } from '../prisma/client';
 import {
   CreateRoutineInput,
@@ -27,48 +26,43 @@ export const createRoutine = async (
     });
 
     if (data.workouts && data.workouts.length > 0) {
-  for (const [i, workoutData] of data.workouts.entries()) {
-    const workout = await tx.workout.create({
-      data: {
-        userId,
-        name: workoutData.name,
-        date: new Date(workoutData.date),
-        secondsDuration: workoutData.secondsDuration ?? null,
-        note: workoutData.note ?? null,
-      },
-    });
-
-    await tx.routineWorkout.create({
-      data: {
-        routineId: routine.id,
-        workoutId: workout.id,
-        orden: i + 1,
-      },
-    });
-
-    for (const [j, exData] of workoutData.exercises.entries()) {
-      const workoutExercise = await tx.workoutExercise.create({
-        data: {
-          workoutId: workout.id,
-          exerciseId: exData.exerciseId,
-          orden: j + 1,
-        },
-      });
-
-      for (const set of exData.sets) {
-        await tx.set.create({
+      for (const [i, workoutData] of data.workouts.entries()) {
+        const workout = await tx.workout.create({
           data: {
-            workoutExerciseId: workoutExercise.id,
-            repetition: set.repetition,
-            weight: set.weight,
-            intensityIndicatorId: set.intensityIndicatorId ?? null,
-            restSeconds: set.restSeconds,
+            userId,
+            name: workoutData.name,
+            date: new Date(workoutData.date),
+            secondsDuration: workoutData.secondsDuration ?? null,
+            note: workoutData.note ?? null,
+            workoutExercises: {
+              create: workoutData.exercises.map((ex, index) => ({
+                orden: ex.orden ?? index + 1,
+                exercise: {
+                  connect: { id: ex.exerciseId },
+                },
+                sets: {
+                  create: ex.sets.map((set) => ({
+                    repetition: set.repetition,
+                    weight: set.weight,
+                    restSeconds: set.restSeconds,
+                    note: set.note,
+                    intensityIndicatorId: set.intensityIndicatorId ?? null,
+                  })),
+                },
+              })),
+            },
+          },
+        });
+
+        await tx.routineWorkout.create({
+          data: {
+            routineId: routine.id,
+            workoutId: workout.id,
+            orden: i + 1,
           },
         });
       }
     }
-  }
-}
 
     return routine;
   });
@@ -161,24 +155,38 @@ export const createWorkout = async (
       userId,
       name: data.name,
       date: new Date(data.date),
-      secondsDuration: data.secondsDuration?? null,
+      secondsDuration: data.secondsDuration ?? null,
       note: data.note ?? null,
       workoutExercises: {
-        create: data.exercises  
+        create: data.exercises.map((ex, index) => ({
+          orden: ex.orden ?? index + 1,
+          exercise: {
+            connect: { id: ex.exerciseId },
+          },
+          sets: {
+            create: ex.sets.map((set) => ({
+              repetition: set.repetition,
+              weight: set.weight,
+              restSeconds: set.restSeconds,
+              note: set.note,
+              intensityIndicatorId: set.intensityIndicatorId ?? null,
+            })),
+          },
+        })),
       },
-    }
-  })
+    },
+  });
 
   await prisma.routineWorkout.create({
     data: {
       routineId,
       workoutId: newWorkout.id,
       orden: (await prisma.routineWorkout.count({ where: { routineId } })) + 1,
-    }
-  })
+    },
+  });
 
   return { status: 201, data: newWorkout };
-}
+};
 
 /* -------------------- AGREGAR / QUITAR SETS -------------------- */
 

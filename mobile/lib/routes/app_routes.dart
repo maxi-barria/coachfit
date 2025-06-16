@@ -16,8 +16,6 @@ class AppRoutes {
     'error': (BuildContext context) => const ErrorScreen(),
     'main': (BuildContext context) => const MainScreen(),
     'request-reset': (BuildContext context) => const RequestResetScreen(),
-
-    'exercise_detail': (BuildContext context) => ExerciseDetailScreen(id: ModalRoute.of(context)!.settings.arguments as String),
     'workout': (BuildContext context) =>  WorkoutScreen(workout: ModalRoute.of(context)!.settings.arguments as Workout),
   };
   

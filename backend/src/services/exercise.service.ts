@@ -25,8 +25,15 @@ export const createExercise = async (
 /** Lista globales + propios */
 export const listExercises = (userId: string) =>
   prisma.exercise.findMany({
-    where: { OR: [{ userId: null }, { userId }] },
-  })
+    where: {
+      OR: [
+        { userId: null },        // globales
+        { userId },              // del usuario
+      ],
+    },
+    orderBy: { name: 'asc' },
+  });
+
 
 /** Devuelve un ejercicio global o propio */
 export const getExercise = (id: string, userId: string) =>

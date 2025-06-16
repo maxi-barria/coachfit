@@ -30,7 +30,7 @@ class _NavigationState extends State<Navigation> {
     final pages = <Widget>[
       const ProfileScreen(),
       if (rol == 'coach') CoachScreen(coachId: coachId, token: token),
-      const TrainScreen(),
+      const RoutineScreen(),
       const ExerciseScreen(),
     ];
 

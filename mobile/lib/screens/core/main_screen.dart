@@ -32,7 +32,7 @@ class _MainScreenState extends State<MainScreen> {
     final List<Widget> _widgetOptions = [
       const ProfileScreen(),
       CoachScreen(coachId: coachId, token: token),
-      const TrainScreen(),
+      const RoutineScreen(),
       const ExerciseScreen(),
     ];
 

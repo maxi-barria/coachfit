@@ -25,22 +25,23 @@ class _RegisterScreenState extends State<LoginScreen> {
           _emailController.text,
           _passwordController.text,
         );
+
+        if (!mounted) return; // <- Agregado
+
         if (!result) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al iniciar sesión.')),
+          );
           return;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sesión iniciada correctamente.')),
+          const SnackBar(content: Text('Sesión iniciada correctamente.')),
         );
 
-        Navigator.pushReplacementNamed(
-          context,
-          'main'
-        );
+        Navigator.pushReplacementNamed(context, 'main');
       } catch (e) {
+        if (!mounted) return; // <- También aquí por seguridad
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: $e')));

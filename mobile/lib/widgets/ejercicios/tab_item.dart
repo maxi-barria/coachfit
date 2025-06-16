@@ -7,9 +7,8 @@ class TabItem extends StatelessWidget {
 
   const TabItem({
     required this.title,
-    super.key
-    });
-
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +16,15 @@ class TabItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            title, 
-            style: Theme.of(context).textTheme.titleMedium
+          Flexible(
+            child: Text(
+              title,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
+          ),
         ],
-      )
+      ),
     );
   }
 }
