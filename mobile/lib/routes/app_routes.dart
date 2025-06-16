@@ -13,9 +13,17 @@ class AppRoutes {
     'error': (BuildContext context) => const ErrorScreen(),
     'main': (BuildContext context) => const MainScreen(),
     'request-reset': (BuildContext context) => const RequestResetScreen(),
+
   };
   
 static Route<dynamic> onGenerateRoute(RouteSettings s) {
+  if (s.name == 'workout_detail' && s.arguments is Map<String, dynamic>) {
+  return MaterialPageRoute(
+    builder: (_) => const WorkoutDetailScreen(), // Usa los argumentos dentro de la pantalla
+    settings: s,
+  );
+}
+
   if (s.name == 'exercise_form') {
   final args = s.arguments;
   if (args != null && args is Map<String, dynamic>) {

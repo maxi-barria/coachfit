@@ -90,46 +90,89 @@ export const listSessions = (
     orderBy: { startedAt: 'desc' },
     skip: (page - 1) * limit,
     take: limit,
-    include: { workout: true },
-  })
-
-/* ---------- Obtener sesión (detalle) ---------- */
-export const getSession = (id: string, userId: string) =>
-  prisma.workoutSession.findFirst({
-    where: { id, userId },
     include: {
-      workout: true,
+      workout: {
+        include: {
+          workoutExercises: {
+            include: {
+              exercise: true,
+            },
+          },
+        },
+      },
       setSessions: {
         include: {
-          workoutExercise: { include: { exercise: true } },
+          workoutExercise: {
+            include: {
+              exercise: true,
+            },
+          },
         },
       },
       summary: true,
     },
-  })
+  });
+
 
 /* ---------- Eliminar sesión ---------- */
 export const deleteSession = (id: string, userId: string) =>
   prisma.workoutSession.deleteMany({ where: { id, userId } })
 
 /* ---------- Obtener resumen por rango de fechas ---------- */
-export const getSummary = (
+export const getSummary = async (
   userId: string,
   from: Date,
   to: Date,
-) =>
-  prisma.workoutSessionSummary.findMany({
+) => {
+  const sessions = await prisma.workoutSession.findMany({
     where: {
-      workoutSession: {
-        userId,
-        startedAt: { gte: from, lte: to },
-      },
+      userId,
+      startedAt: { gte: from, lte: to },
     },
+    orderBy: { startedAt: 'desc' },
     include: {
-      workoutSession: { select: { startedAt: true, workout: true } },
+      workout: {
+        select: {
+          name: true,
+          workoutExercises: {
+            select: {
+              exercise: { select: { name: true } },
+              setSessions: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: { weight: true, rep: true },
+              },
+            },
+          },
+        },
+      },
+      summary: true,
     },
-    orderBy: { createdAt: 'asc' },
-  })
+  });
+
+  return sessions.map(session => {
+    const summary = session.summary;
+    const exercises = session.workout?.workoutExercises.map(we => {
+      const bestSet = we.setSessions[0];
+      return {
+        name: we.exercise.name,
+        bestSet: bestSet ? `${bestSet.weight} kg x ${bestSet.rep}` : '-',
+      };
+    }) ?? [];
+
+    return {
+      id: session.id,
+      date: session.startedAt,
+      routineName: session.workout?.name ?? 'Sin nombre',
+      totalVolume: summary?.totalVolume ?? 0,
+      totalReps: summary?.totalReps ?? 0,
+      totalSets: summary?.totalSets ?? 0,
+      prCount: 0, // opcional: puedes calcular PRs reales después
+      exercises,
+    };
+  });
+};
+
 
   export const removeSetFromSession = async (
   setSessionId: string,
