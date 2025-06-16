@@ -254,4 +254,26 @@ export const getExercisePR = async (userId: string, exerciseId: string) => {
     date: pr.workoutSession.startedAt,
   };
 };
+export const getSession = async (sessionId: string, userId: string) => {
+  return await prisma.workoutSession.findFirst({
+    where: { id: sessionId, userId },
+    include: {
+      workout: {
+        include: {
+          workoutExercises: {
+            include: { exercise: true },
+          },
+        },
+      },
+      setSessions: {
+        include: {
+          workoutExercise: {
+            include: { exercise: true },
+          },
+        },
+      },
+      summary: true,
+    },
+  });
+};
 
