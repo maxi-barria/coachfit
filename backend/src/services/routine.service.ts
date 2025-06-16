@@ -1,8 +1,10 @@
+import { create } from 'domain';
 import { prisma } from '../prisma/client';
 import {
   CreateRoutineInput,
   UpdateRoutineInput,
   AddSetInput,
+  CreateWorkoutInput,
 } from '../validators/routine.validator';
 
 /* ------------------------- CRUD DE RUTINAS ------------------------- */
@@ -143,6 +145,40 @@ export const deleteRoutine = async (id: string, userId: string) => {
     where: { id, userId },
   });
 };
+
+export const createWorkout = async (
+  routineId: string,
+  data: CreateWorkoutInput,
+  userId: string,
+) => {
+  const routine = await prisma.routine.findFirst({
+    where: { id: routineId, userId },
+  });
+  if (!routine) return { status: 404, message: 'Routine not found' };
+
+  const newWorkout = await prisma.workout.create({
+    data: {
+      userId,
+      name: data.name,
+      date: new Date(data.date),
+      secondsDuration: data.secondsDuration?? null,
+      note: data.note ?? null,
+      workoutExercises: {
+        create: data.exercises  
+      },
+    }
+  })
+
+  await prisma.routineWorkout.create({
+    data: {
+      routineId,
+      workoutId: newWorkout.id,
+      orden: (await prisma.routineWorkout.count({ where: { routineId } })) + 1,
+    }
+  })
+
+  return { status: 201, data: newWorkout };
+}
 
 /* -------------------- AGREGAR / QUITAR SETS -------------------- */
 

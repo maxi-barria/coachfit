@@ -22,6 +22,8 @@ const workoutSchema = z.object({
   exercises: z.array(workoutExerciseSchema).min(1, 'Debe incluir al menos un ejercicio'),
 })
 
+export type CreateWorkoutInput = z.infer<typeof workoutSchema>
+
 export const createRoutineSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   goal: z.string().min(1, 'Goal is required'),

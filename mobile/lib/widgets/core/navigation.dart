@@ -42,9 +42,11 @@ class _NavigationState extends State<Navigation> {
     ];
 
     return Scaffold(
+
       body: IndexedStack(
         index: _selectedIndex,
         children: pages,
+
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,

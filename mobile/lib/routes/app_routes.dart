@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/models/routine.dart';
+import 'package:mobile/models/workout.dart';
+import 'package:mobile/screens/routine/workout_screen.dart';
 import '../screens/core/screen.dart';
 import '../screens/login/reset_password_screen.dart'; 
 import '../screens/login/request_reset_screen.dart';
@@ -14,6 +17,8 @@ class AppRoutes {
     'main': (BuildContext context) => const MainScreen(),
     'request-reset': (BuildContext context) => const RequestResetScreen(),
 
+    'exercise_detail': (BuildContext context) => ExerciseDetailScreen(id: ModalRoute.of(context)!.settings.arguments as String),
+    'workout': (BuildContext context) =>  WorkoutScreen(workout: ModalRoute.of(context)!.settings.arguments as Workout),
   };
   
 static Route<dynamic> onGenerateRoute(RouteSettings s) {

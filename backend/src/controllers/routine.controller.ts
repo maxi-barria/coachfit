@@ -89,6 +89,25 @@ export const deleteRoutine: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const createWorkout: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const result = await RoutineService.createWorkout(
+      req.params.id,
+      req.body,
+      userId?? '',
+    );
+
+    if (result.status === 404) {
+      res.status(404).json({ message: 'Not found or not yours' });
+      return;
+    }
+    res.status(201).json(result.data);
+  } catch (err) {
+    next(err);
+  }
+} 
+
 /* -------- ADD SET -------- */
 export const addSet: RequestHandler = async (req, res, next) => {
   try {

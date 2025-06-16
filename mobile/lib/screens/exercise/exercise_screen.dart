@@ -130,6 +130,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
+
             child: TextField(
               onChanged: (value) {
                 setState(() => searchQuery = value.toLowerCase());
@@ -157,6 +158,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               ),
               style: theme.textTheme.bodyMedium, // usa texto del tema
             ),
+
           ),
           const SizedBox(height: 10),
           Expanded(

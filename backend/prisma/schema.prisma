@@ -52,6 +52,8 @@ model Exercise {
   name            String
   description     String?
   type            String?
+  imageUrl        String?
+  gifUrl          String?
   secondsDuration Int?
   userId          String?
   isCustom        Boolean  @default(false)
@@ -63,6 +65,7 @@ model Exercise {
   thumbnail       String?
 
   user                   User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   exerciseMusclePortions ExerciseMusclePortion[]
   workoutExercises       WorkoutExercise[]
   setSessions            SetSession[]

@@ -136,8 +136,10 @@ Future<Map<String, dynamic>> updateExercise(String id, Map<String, dynamic> data
     );
 
     if (response.statusCode == 200) {
+
       final List<dynamic> data = json.decode(response.body);
       return data.map((e) => Map<String, dynamic>.from(e)).toList();
+
     } else {
       throw Exception('Error al obtener el historial del ejercicio');
     }

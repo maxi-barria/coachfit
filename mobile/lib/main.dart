@@ -1,5 +1,12 @@
+
 import 'package:flutter/material.dart';
+
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/core/core.dart';
+import 'package:mobile/providers/routine_provider.dart';
+import 'screens/login/reset_password_screen.dart';
+
 import 'package:mobile/providers/loggin_provider.dart';
 import 'package:mobile/screens/login/reset_password_screen.dart';
 import 'package:mobile/screens/login/login_screen.dart';
@@ -7,14 +14,19 @@ import 'package:provider/provider.dart';
 import 'package:mobile/screens/exercise/exercise_screen.dart';
 import 'widgets/core/navigation.dart';
 
-void main() => runApp(
-  MultiProvider(
+
+void main() async {
+  await dotenv.load(fileName: '.env'); 
+  runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => LogginProvider()),
+      ChangeNotifierProvider(create: (_) => RoutineProvider()),
     ],
-    child: const MyApp(),
-  ),
-);
+
+    child: MyApp(),
+  ));
+}
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -24,9 +36,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final navigatorKey = GlobalKey<NavigatorState>();
+
   final _appLinks = AppLinks();
 
   String? _lastToken;
+
 
   @override
   void initState() {

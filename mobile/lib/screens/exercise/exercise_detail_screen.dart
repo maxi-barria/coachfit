@@ -50,6 +50,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
   }
 
   @override
+
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bgColor = theme.scaffoldBackgroundColor;
@@ -62,6 +63,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
         appBar: CustomAppBar(
           title: _isLoading ? '' : _exercise?.name ?? 'Ejercicio',
           showBack: true,
+
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator(color: MyTheme.primary))
