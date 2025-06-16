@@ -72,17 +72,27 @@ export const listRoutines = async (userId: string) => {
   return prisma.routine.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      name: true,
-      goal: true,
-      startDate: true,
-      endDate: true,
-      version: true,
-      editable: true,
+    include: {
+      routineWorkouts: {
+        orderBy: { orden: 'asc' },
+        include: {
+          workout: {
+            include: {
+              workoutExercises: {
+                orderBy: { orden: 'asc' },
+                include: {
+                  exercise: true,
+                  sets: { orderBy: { createdAt: 'asc' } },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 };
+
 
 export const getRoutine = async (id: string, userId: string) => {
   return prisma.routine.findFirst({
@@ -107,6 +117,7 @@ export const getRoutine = async (id: string, userId: string) => {
     },
   });
 };
+
 
 export const updateRoutine = async (
   id: string,

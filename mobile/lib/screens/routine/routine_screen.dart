@@ -3,6 +3,7 @@ import 'package:mobile/providers/routine_provider.dart';
 import 'package:mobile/widgets/routine/routine_card.dart';
 import 'package:mobile/themes/themes.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/core/core.dart'; // Importa CustomAppBar desde aquí
 
 class RoutineScreen extends StatefulWidget {
   const RoutineScreen({super.key});
@@ -12,11 +13,11 @@ class RoutineScreen extends StatefulWidget {
 }
 
 class _RoutineScreenState extends State<RoutineScreen> {
-  
   @override
-  void initState()  {
+  void initState() {
     super.initState();
-    Future.microtask(() => Provider.of<RoutineProvider>(context, listen: false).fetchRoutines());
+    Future.microtask(() =>
+        Provider.of<RoutineProvider>(context, listen: false).fetchRoutines());
   }
 
   @override
@@ -25,6 +26,7 @@ class _RoutineScreenState extends State<RoutineScreen> {
       builder: (context, routineProvider, _) {
         return Scaffold(
           backgroundColor: MyTheme.backgroundColor,
+          appBar: const CustomAppBar(title: 'Rutinas', showBack: false),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -34,16 +36,11 @@ class _RoutineScreenState extends State<RoutineScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Rutinas',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      'Mis Rutinas (${routineProvider.routines.length})',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Icon(Icons.add, color: MyTheme.primary),
                   ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Mis Rutinas (${routineProvider.routines.length})',
-                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 16),
                 if (routineProvider.isLoading)

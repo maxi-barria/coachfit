@@ -9,6 +9,7 @@ import '../screens/login/request_reset_screen.dart';
 
 class AppRoutes {
   static const initialRoute = 'home';
+
   static Map<String, Widget Function(BuildContext)> routes = {
     'login': (BuildContext context) => const LoginScreen(),
     'register': (BuildContext context) => const RegisterScreen(),
@@ -16,42 +17,55 @@ class AppRoutes {
     'error': (BuildContext context) => const ErrorScreen(),
     'main': (BuildContext context) => const MainScreen(),
     'request-reset': (BuildContext context) => const RequestResetScreen(),
-    'workout': (BuildContext context) =>  WorkoutScreen(workout: ModalRoute.of(context)!.settings.arguments as Workout),
+
+    // Esta ruta espera una Routine como argumento
+    'workout': (BuildContext context) {
+  final args = ModalRoute.of(context)?.settings.arguments;
+  if (args is Workout) {
+    return WorkoutScreen(workout: args);
+  }
+  return const ErrorScreen();
+},
   };
-  
-static Route<dynamic> onGenerateRoute(RouteSettings s) {
-  if (s.name == 'workout_detail' && s.arguments is Map<String, dynamic>) {
-  return MaterialPageRoute(
-    builder: (_) => const WorkoutDetailScreen(), // Usa los argumentos dentro de la pantalla
-    settings: s,
-  );
-}
 
-  if (s.name == 'exercise_form') {
-  final args = s.arguments;
-  if (args != null && args is Map<String, dynamic>) {
-    return MaterialPageRoute(
-      builder: (_) => ExerciseFormScreen(existingExercise: args),
-    );
-  }
-  return MaterialPageRoute(
-    builder: (_) => const ExerciseFormScreen(),
-  );
-}
+  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    final name = settings.name;
+    final args = settings.arguments;
 
-  if (s.name == 'exercise_detail' && s.arguments is String) {
-    return MaterialPageRoute(
-      builder: (_) => ExerciseDetailScreen(id: s.arguments as String),
-    );
+    if (name == 'workout_detail' && args is Map<String, dynamic>) {
+      return MaterialPageRoute(
+        builder: (_) => const WorkoutDetailScreen(),
+        settings: settings,
+      );
+    }
+
+    if (name == 'exercise_form') {
+      if (args != null && args is Map<String, dynamic>) {
+        return MaterialPageRoute(
+          builder: (_) => ExerciseFormScreen(existingExercise: args),
+        );
+      }
+      return MaterialPageRoute(
+        builder: (_) => const ExerciseFormScreen(),
+      );
+    }
+
+    if (name == 'exercise_detail' && args is String) {
+      return MaterialPageRoute(
+        builder: (_) => ExerciseDetailScreen(id: args),
+      );
+    }
+
+    if (name == '/reset' && args is String) {
+      return MaterialPageRoute(
+        builder: (_) => ResetPasswordScreen(token: args),
+      );
+    }
+
+    if (name?.startsWith('/?token=') ?? false) {
+      return MaterialPageRoute(builder: (_) => const SizedBox.shrink());
+    }
+
+    return MaterialPageRoute(builder: (_) => const ErrorScreen());
   }
-  if (s.name == '/reset' && s.arguments is String) {
-    return MaterialPageRoute(
-      builder: (_) => ResetPasswordScreen(token: s.arguments as String),
-    );
-  }
-  if (s.name?.startsWith('/?token=') ?? false) {
-    // descartamos “/?token=…” si Android lo llegara a inyectar
-    return MaterialPageRoute(builder: (_) => const SizedBox.shrink());
-  }
-  return MaterialPageRoute(builder: (_) => const ErrorScreen());
-}}
+}

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/core/core.dart';
 import 'package:mobile/providers/routine_provider.dart';
+import 'package:mobile/providers/workout_status_provider.dart';
 import 'screens/login/reset_password_screen.dart';
 
 import 'package:mobile/providers/loggin_provider.dart';
@@ -21,6 +22,7 @@ void main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => LogginProvider()),
       ChangeNotifierProvider(create: (_) => RoutineProvider()),
+      ChangeNotifierProvider(create: (_) => WorkoutStatusProvider()),
     ],
 
     child: MyApp(),
