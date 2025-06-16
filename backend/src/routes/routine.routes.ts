@@ -14,6 +14,7 @@ router.get('/:id', RoutineCtrl.getRoutine);        // Detalle de una rutina
 router.post('/', RoutineCtrl.createRoutine);       // Crear rutina completa
 router.put('/:id', RoutineCtrl.updateRoutine);     // Actualizar metadatos
 router.delete('/:id', RoutineCtrl.deleteRoutine);  // Eliminar rutina
+router.post('/:id/workout', RoutineCtrl.createWorkout);
 
 /* -------- Sets dinámicos -------- */
 router.post('/:routineId/add-set', RoutineCtrl.addSet);       // Agregar un set

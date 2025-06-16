@@ -41,6 +41,7 @@ dependencies:
   flutter_svg: ^2.0.7
   app_links: ^3.0.1
   url_launcher: ^6.1.7
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -59,10 +60,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
     
-    
+  
   assets:
     - lib/assets/logo.svg
-
+    - .env
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

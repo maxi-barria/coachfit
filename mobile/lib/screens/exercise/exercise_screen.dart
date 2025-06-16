@@ -60,22 +60,27 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              onChanged: (value) {
-                setState(() => searchQuery = value.toLowerCase());
-              },
-              decoration: InputDecoration(
-                hintText: 'Buscar Ejercicio',
-                prefixIcon: Icon(Icons.search),
-                suffixIcon: Icon(Icons.filter_list),
-                filled: true,
-                fillColor: Colors.deepOrange[200],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+            child: Row(
+              children: [
+                TextField(
+                  onChanged: (value) {
+                    setState(() => searchQuery = value.toLowerCase());
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Buscar Ejercicio',
+                    prefixIcon: Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.deepOrange[200],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
-              ),
-            ),
+                Icon(Icons.filter_list),
+                Icon(Icons.add)
+              ],
+            )
           ),
         const SizedBox(height: 10),
         Expanded(

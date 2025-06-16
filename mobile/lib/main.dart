@@ -1,14 +1,20 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile/core/core.dart';
+import 'package:mobile/providers/routine_provider.dart';
 import 'screens/login/reset_password_screen.dart';
 import 'package:mobile/providers/loggin_provider.dart';
 import 'package:provider/provider.dart';
 
-void main() => runApp(MultiProvider(
+void main() async {
+  await dotenv.load(fileName: '.env'); 
+  runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => LogginProvider()),
+      ChangeNotifierProvider(create: (_) => RoutineProvider()),
     ],
     child: MyApp(),
   ));
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -19,7 +25,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final navigatorKey = GlobalKey<NavigatorState>();
   final _appLinks    = AppLinks();
-
   String? _lastToken;                       // evita dobles intents
 
   @override

@@ -4,11 +4,11 @@ export const createExerciseSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   type: z.string().optional(),
+  imageUrl: z.string().optional(),
+  gifUrl: z.string().optional(),
   secondsDuration: z.number().int().positive().optional(),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   equipment: z.string().optional(),
-  videoUrl: z.string().url().optional(),
-  thumbnail: z.string().url().optional(),
 })
 
 export const searchExerciseSchema = z.object({

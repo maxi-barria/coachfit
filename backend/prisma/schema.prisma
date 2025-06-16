@@ -50,16 +50,16 @@ model Exercise {
   name            String
   description     String?
   type            String?
+  imageUrl        String?
+  gifUrl          String?
   secondsDuration Int?
 
   userId     String?
   isCustom   Boolean  @default(false)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @default(now()) @updatedAt
   difficulty String?
   equipment  String?
-  videoUrl   String?
-  thumbnail  String?
 
   user                   User?                   @relation(fields: [userId], references: [id])
   exerciseMusclePortions ExerciseMusclePortion[]
