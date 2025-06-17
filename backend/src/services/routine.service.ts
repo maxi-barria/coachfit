@@ -1,52 +1,60 @@
+/* =========================================================================
+ *  services/routine.service.ts
+ *  CRUD de rutinas, workouts, ejercicios y sets
+ * ========================================================================= */
+
 import { prisma } from '../prisma/client';
 import {
   CreateRoutineInput,
   UpdateRoutineInput,
-  AddSetInput,
   CreateWorkoutInput,
+  AddSetInput,
+  AddExerciseInput,
 } from '../validators/routine.validator';
+import { Prisma } from '@prisma/client';
 
-/* ------------------------- CRUD DE RUTINAS ------------------------- */
-
+/* ========================= CREAR RUTINA ========================= */
 export const createRoutine = async (
   userId: string,
   data: CreateRoutineInput,
 ) => {
   return prisma.$transaction(async (tx) => {
-    const routine = await tx.routine.create({
-      data: {
-        userId,
-        name: data.name,
-        goal: data.goal,
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
-        editable: true,
-        version: 1,
-      },
-    });
+    /* objeto sin undefined */
+    const routineData: Prisma.RoutineUncheckedCreateInput = {
+      userId,
+      name   : data.name,
+      goal   : data.goal ?? '',
+      editable: true,
+      version : 1,
+      startDate: data.startDate ? new Date(data.startDate) : new Date(),
+      endDate: data.endDate ? new Date(data.endDate) : new Date(),
+    };
+    if (data.startDate) routineData.startDate = new Date(data.startDate);
+    if (data.endDate)   routineData.endDate   = new Date(data.endDate);
 
-    if (data.workouts && data.workouts.length > 0) {
-      for (const [i, workoutData] of data.workouts.entries()) {
+    const routine = await tx.routine.create({ data: routineData });
+
+    /* workouts anidados (opcional) */
+    if (data.workouts?.length) {
+      for (const [i, w] of data.workouts.entries()) {
         const workout = await tx.workout.create({
           data: {
             userId,
-            name: workoutData.name,
-            date: new Date(workoutData.date),
-            secondsDuration: workoutData.secondsDuration ?? null,
-            note: workoutData.note ?? null,
+            name : w.name,
+            date : new Date(w.date),
+            secondsDuration: w.secondsDuration ?? null,
+            note : w.note ?? null,
             workoutExercises: {
-              create: workoutData.exercises.map((ex, index) => ({
-                orden: ex.orden ?? index + 1,
-                exercise: {
-                  connect: { id: ex.exerciseId },
-                },
+              create: w.exercises.map((ex, idx) => ({
+                orden   : ex.orden ?? idx + 1,
+                exercise: { connect: { id: ex.exerciseId } },
                 sets: {
-                  create: ex.sets.map((set) => ({
-                    repetition: set.repetition,
-                    weight: set.weight,
-                    restSeconds: set.restSeconds,
-                    note: set.note,
-                    intensityIndicatorId: set.intensityIndicatorId ?? null,
+                  create: ex.sets.map((s) => ({
+                    repetition: s.repetition,
+                    weight    : s.weight,
+                    restSeconds: s.restSeconds,
+                    note      : s.note,
+                    intensityIndicatorId: s.intensityIndicatorId ?? null,
                   })),
                 },
               })),
@@ -55,11 +63,7 @@ export const createRoutine = async (
         });
 
         await tx.routineWorkout.create({
-          data: {
-            routineId: routine.id,
-            workoutId: workout.id,
-            orden: i + 1,
-          },
+          data: { routineId: routine.id, workoutId: workout.id, orden: i + 1 },
         });
       }
     }
@@ -68,9 +72,10 @@ export const createRoutine = async (
   });
 };
 
-export const listRoutines = async (userId: string) => {
-  return prisma.routine.findMany({
-    where: { userId },
+/* ====================== LISTAR / OBTENER ======================= */
+export const listRoutines = (userId: string) =>
+  prisma.routine.findMany({
+    where : { userId },
     orderBy: { createdAt: 'desc' },
     include: {
       routineWorkouts: {
@@ -91,12 +96,10 @@ export const listRoutines = async (userId: string) => {
       },
     },
   });
-};
 
-
-export const getRoutine = async (id: string, userId: string) => {
-  return prisma.routine.findFirst({
-    where: { id, userId },
+export const getRoutine = (id: string, userId: string) =>
+  prisma.routine.findFirst({
+    where : { id, userId },
     include: {
       routineWorkouts: {
         orderBy: { orden: 'asc' },
@@ -116,71 +119,60 @@ export const getRoutine = async (id: string, userId: string) => {
       },
     },
   });
-};
 
-
+/* =========================== UPDATE ============================ */
 export const updateRoutine = async (
   id: string,
   data: UpdateRoutineInput,
   userId: string,
 ) => {
-  const routine = await prisma.routine.findFirst({
-    where: { id, userId },
-  });
-  if (!routine) return { status: 404 };
-
+  const routine = await prisma.routine.findFirst({ where: { id, userId } });
+  if (!routine)          return { status: 404 };
   if (!routine.editable) return { status: 403, message: 'Routine is locked' };
 
-  await prisma.routine.update({
-    where: { id },
-    data: {
-      name: data.name ?? routine.name,
-      goal: data.goal ?? routine.goal,
-      startDate: data.startDate ? new Date(data.startDate) : routine.startDate,
-      endDate: data.endDate ? new Date(data.endDate) : routine.endDate,
-      version: routine.version + 1,
-    },
-  });
+  const updateData: Prisma.RoutineUncheckedUpdateInput = {
+    version: routine.version + 1,
+  };
+  if (data.name)       updateData.name = data.name;
+  if (data.goal !== undefined) updateData.goal = data.goal;
+  if (data.startDate)  updateData.startDate = new Date(data.startDate);
+  if (data.endDate)    updateData.endDate   = new Date(data.endDate);
 
+  await prisma.routine.update({ where: { id }, data: updateData });
   return { status: 200 };
 };
 
-export const deleteRoutine = async (id: string, userId: string) => {
-  return prisma.routine.deleteMany({
-    where: { id, userId },
-  });
-};
+/* =========================== DELETE ============================ */
+export const deleteRoutine = (id: string, userId: string) =>
+  prisma.routine.deleteMany({ where: { id, userId } });
 
+/* ====================== CREAR WORKOUT ========================== */
 export const createWorkout = async (
   routineId: string,
   data: CreateWorkoutInput,
   userId: string,
 ) => {
-  const routine = await prisma.routine.findFirst({
-    where: { id: routineId, userId },
-  });
+  const routine = await prisma.routine.findFirst({ where: { id: routineId, userId } });
   if (!routine) return { status: 404, message: 'Routine not found' };
 
-  const newWorkout = await prisma.workout.create({
+  const workout = await prisma.workout.create({
     data: {
       userId,
-      name: data.name,
-      date: new Date(data.date),
+      name : data.name,
+      date : new Date(data.date),
       secondsDuration: data.secondsDuration ?? null,
-      note: data.note ?? null,
+      note : data.note ?? null,
       workoutExercises: {
-        create: data.exercises.map((ex, index) => ({
-          orden: ex.orden ?? index + 1,
-          exercise: {
-            connect: { id: ex.exerciseId },
-          },
+        create: data.exercises.map((ex, idx) => ({
+          orden   : ex.orden ?? idx + 1,
+          exercise: { connect: { id: ex.exerciseId } },
           sets: {
-            create: ex.sets.map((set) => ({
-              repetition: set.repetition,
-              weight: set.weight,
-              restSeconds: set.restSeconds,
-              note: set.note,
-              intensityIndicatorId: set.intensityIndicatorId ?? null,
+            create: ex.sets.map((s) => ({
+              repetition: s.repetition,
+              weight    : s.weight,
+              restSeconds: s.restSeconds,
+              note      : s.note,
+              intensityIndicatorId: s.intensityIndicatorId ?? null,
             })),
           },
         })),
@@ -188,19 +180,54 @@ export const createWorkout = async (
     },
   });
 
+  const orden = await prisma.routineWorkout.count({ where: { routineId } });
   await prisma.routineWorkout.create({
+    data: { routineId, workoutId: workout.id, orden: orden + 1 },
+  });
+
+  return { status: 201, data: workout };
+};
+
+/* ===================== AGREGAR EJERCICIO ======================= */
+export const addExerciseToWorkout = async (
+  workoutId: string,
+  data: AddExerciseInput,
+  userId: string,
+) => {
+  const workout = await prisma.workout.findFirst({
+    where: { id: workoutId, userId },
+  });
+  if (!workout) return { status: 404, message: 'Workout not found' };
+
+  const orden =
+    data.orden ??
+    (await prisma.workoutExercise.count({ where: { workoutId } })) + 1;
+
+  const workoutExercise = await prisma.workoutExercise.create({
     data: {
-      routineId,
-      workoutId: newWorkout.id,
-      orden: (await prisma.routineWorkout.count({ where: { routineId } })) + 1,
+      workoutId,
+      exerciseId: data.exerciseId,
+      orden,
+      sets: {
+        create: data.sets.map((s) => ({
+          repetition: s.repetition,
+          weight    : s.weight,
+          restSeconds: s.restSeconds,
+          note      : s.note,
+          intensityIndicatorId: s.intensityIndicatorId ?? null,
+        })),
+      },
+    },
+    include: {
+      exercise: true,
+      sets    : true,
     },
   });
 
-  return { status: 201, data: newWorkout };
+  return { status: 201, data: workoutExercise };
 };
 
-/* -------------------- AGREGAR / QUITAR SETS -------------------- */
-
+/* ===================== AGREGAR / QUITAR SET ==================== */
 export const addSetToExercise = async (
   routineId: string,
   workoutId: string,
@@ -209,7 +236,7 @@ export const addSetToExercise = async (
   userId: string,
 ) => {
   const routine = await prisma.routine.findFirst({
-    where: { id: routineId, userId },
+    where : { id: routineId, userId },
     include: { routineWorkouts: { where: { workoutId } } },
   });
   if (!routine) return { status: 404, message: 'Routine/workout not found' };
@@ -223,9 +250,9 @@ export const addSetToExercise = async (
     data: {
       workoutExerciseId: wEx.id,
       repetition: set.repetition,
-      weight: set.weight,
-      intensityIndicatorId: set.intensityIndicatorId ?? null,
+      weight    : set.weight,
       restSeconds: set.restSeconds,
+      intensityIndicatorId: set.intensityIndicatorId ?? null,
     },
   });
 
@@ -238,7 +265,7 @@ export const removeSetFromExercise = async (
   userId: string,
 ) => {
   const setObj = await prisma.set.findUnique({
-    where: { id: setId },
+    where : { id: setId },
     include: {
       workoutExercise: {
         include: {
@@ -255,7 +282,7 @@ export const removeSetFromExercise = async (
   if (
     !setObj ||
     setObj.workoutExercise.workout.routineWorkouts[0]?.routine.userId !== userId ||
-    setObj.workoutExercise.workout.routineWorkouts[0]?.routine.id !== routineId
+    setObj.workoutExercise.workout.routineWorkouts[0]?.routine.id     !== routineId
   ) {
     return { status: 404, message: 'Set not found or not yours' };
   }

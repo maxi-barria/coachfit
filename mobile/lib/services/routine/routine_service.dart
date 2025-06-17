@@ -2,107 +2,95 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mobile/env/environment.dart';
 import 'package:mobile/models/routine.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class RoutineService {
-    final String baseUrl = Environment.apiUrl;
-    
-    Future<List<Routine>> getRoutines() async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? token = prefs.getString('token');
+  final String baseUrl = Environment.apiUrl;
 
-        final response = await http.get(
-            Uri.parse('$baseUrl/routines'),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token'
-            }
+  /* ---------------------- helpers ---------------------- */
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
 
-        );
+  Map<String, String> _headers(String? token) => {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
 
-        if (response.statusCode == 200) {
-            List<dynamic> decodedData = jsonDecode(response.body);
-            return decodedData.map((json) => Routine.fromJson(json)).toList(); 
-        } else {
-            throw Exception('Failed to load routines');
-        }
+  Routine _handleResponse(http.Response res) {
+    final status = res.statusCode;
+    if (status == 200 || status == 201) {
+      return Routine.fromJson(jsonDecode(res.body));
     }
+    throw Exception('Error $status: ${res.body}');
+  }
 
-    Future<Routine> getRoutineById(String id) async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? token = prefs.getString('token');
+  /* --------------------- RUTINAS ----------------------- */
+  Future<List<Routine>> getRoutines() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/routines'),
+      headers: _headers(await _getToken()),
+    );
 
-        final response = await http.get(
-            Uri.parse('$baseUrl/routines/$id'),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token'
-            }
-        );
-
-        if (response.statusCode == 200) {
-            return Routine.fromJson(json.decode(response.body));
-        } else {
-            throw Exception('Failed to load routine');
-        }
+    if (res.statusCode == 200) {
+      return (jsonDecode(res.body) as List)
+          .map((e) => Routine.fromJson(e))
+          .toList();
     }
+    throw Exception('Error ${res.statusCode}: ${res.body}');
+  }
 
-    Future<Routine> createRoutine(Routine routine) async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? token = prefs.getString('token');
+  Future<Routine> getRoutineById(String id) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/routines/$id'),
+      headers: _headers(await _getToken()),
+    );
+    return _handleResponse(res);
+  }
 
-        final response = await http.post(
-            Uri.parse('$baseUrl/routines'),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token'
-            },
-            body: json.encode(routine.toJson())
-        );
+  Future<Routine> createRoutine(Map<String, dynamic> data) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/routines'),
+      headers: _headers(await _getToken()),
+      body: jsonEncode(data),
+    );
+    return _handleResponse(res);
+  }
 
-        if (response.statusCode == 201) {
-            return Routine.fromJson(json.decode(response.body));
-        } else {
-            throw Exception('Failed to create routine');
-        }
+  Future<Routine> updateRoutine(String id, Map<String, dynamic> data) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/routines/$id'),
+      headers: _headers(await _getToken()),
+      body: jsonEncode(data),
+    );
+    return _handleResponse(res);
+  }
+
+  Future<void> deleteRoutine(String id) async {
+    final res = await http.delete(
+      Uri.parse('$baseUrl/routines/$id'),
+      headers: _headers(await _getToken()),
+    );
+
+    if (res.statusCode != 200 && res.statusCode != 204) {
+      throw Exception('Error ${res.statusCode}: ${res.body}');
     }
+  }
 
-    Future<Routine> updateRoutine(String id, Map<String, dynamic> data) async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? token = prefs.getString('token');
+  /* ----------- NUEVO: agregar ejercicio a workout ----------- */
+  Future<void> addExerciseToWorkout(
+    String workoutId,
+    Map<String, dynamic> payload,
+  ) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/workouts/$workoutId/exercises'),
+      headers: _headers(await _getToken()),
+      body: jsonEncode(payload),
+    );
 
-        final response = await http.put(
-            Uri.parse('$baseUrl/routines/$id'),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token'
-            },
-            body: json.encode(data)
-        );
-
-        if (response.statusCode == 200) {
-            return Routine.fromJson(json.decode(response.body));
-        } else {
-            throw Exception('Failed to update routine');
-        }
+    if (res.statusCode != 201) {
+      throw Exception('Error ${res.statusCode}: ${res.body}');
     }
-
-    Future<void> deleteRoutine(String id) async {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        final String? token = prefs.getString('token');
-
-        final response = await http.delete(
-            Uri.parse('$baseUrl/routines/$id'),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token'
-            }
-        );
-
-        if (response.statusCode != 200) {
-            throw Exception('Failed to delete routine');
-        }
-    }
+  }
 }

@@ -3,7 +3,10 @@ import 'package:mobile/models/routine.dart';
 import 'package:mobile/services/routine/routine_service.dart';
 
 class RoutineProvider extends ChangeNotifier {
-  final RoutineService _routineService = RoutineService();
+  /* --------------------- servicio --------------------- */
+  final RoutineService _service = RoutineService();
+
+  /* --------------------- estado ---------------------- */
   List<Routine> _routines = [];
   Routine? _selectedRoutine;
   bool _isLoading = false;
@@ -14,91 +17,103 @@ class RoutineProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> fetchRoutines() async {
-    _isLoading = true;
-    _error = null;
+  /* --------------------- helpers --------------------- */
+  void _setLoading(bool v) {
+    _isLoading = v;
     notifyListeners();
+  }
 
+  /* =================== RUTINAS ======================= */
+  Future<void> fetchRoutines() async {
+    _setLoading(true);
+    _error = null;
     try {
-      _routines = await _routineService.getRoutines();
-      print(_routines);
+      _routines = await _service.getRoutines();
     } catch (e) {
       _error = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
   Future<void> fetchRoutineById(String id) async {
-    _isLoading = true;
+    _setLoading(true);
     _error = null;
-    notifyListeners();
-
     try {
-      _selectedRoutine = await _routineService.getRoutineById(id);
+      _selectedRoutine = await _service.getRoutineById(id);
     } catch (e) {
       _error = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
-  Future<void> createRoutine(Routine routine) async {
-    _isLoading = true;
+  /// ✅ Ahora retorna la rutina creada
+  Future<Routine?> createRoutine(Map<String, dynamic> data) async {
+    _setLoading(true);
     _error = null;
-    notifyListeners();
-
     try {
-      final newRoutine = await _routineService.createRoutine(routine);
+      final newRoutine = await _service.createRoutine(data);
       _routines.add(newRoutine);
+      return newRoutine;
     } catch (e) {
       _error = e.toString();
+      return null;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
   Future<void> updateRoutine(String id, Map<String, dynamic> data) async {
-    _isLoading = true;
+    _setLoading(true);
     _error = null;
-    notifyListeners();
-
     try {
-      final updatedRoutine = await _routineService.updateRoutine(id, data);
-      final index = _routines.indexWhere((routine) => routine.id == id);
-      if (index != -1) {
-        _routines[index] = updatedRoutine;
-      }
-      if (_selectedRoutine?.id == id) {
-        _selectedRoutine = updatedRoutine;
-      }
+      final updated = await _service.updateRoutine(id, data);
+      final i = _routines.indexWhere((r) => r.id == id);
+      if (i != -1) _routines[i] = updated;
+      if (_selectedRoutine?.id == id) _selectedRoutine = updated;
     } catch (e) {
       _error = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
   Future<void> deleteRoutine(String id) async {
-    _isLoading = true;
+    _setLoading(true);
     _error = null;
-    notifyListeners();
-
     try {
-      await _routineService.deleteRoutine(id);
-      _routines.removeWhere((routine) => routine.id == id);
-      if (_selectedRoutine?.id == id) {
-        _selectedRoutine = null;
-      }
+      await _service.deleteRoutine(id);
+      _routines.removeWhere((r) => r.id == id);
+      if (_selectedRoutine?.id == id) _selectedRoutine = null;
     } catch (e) {
       _error = e.toString();
     } finally {
-      _isLoading = false;
+      _setLoading(false);
+    }
+  }
+
+  /* ============ NUEVO: agregar ejercicio a workout ============ */
+  Future<bool> addExerciseToWorkout(
+    String workoutId,
+    Map<String, dynamic> payload,
+  ) async {
+    _setLoading(true);
+    _error = null;
+    try {
+      await _service.addExerciseToWorkout(workoutId, payload);
+
+      // refresca la rutina activa
+      if (_selectedRoutine != null) {
+        await fetchRoutineById(_selectedRoutine!.id);
+      }
+      return true;
+    } catch (e) {
+      _error = e.toString();
       notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:mobile/models/routine_workout.dart';
+import 'package:mobile/models/workout.dart';
 
 class Routine {
   final String id;
@@ -30,12 +31,11 @@ class Routine {
       endDate: DateTime.parse(json['endDate']),
       editable: json['editable'],
       version: json['version'],
-      routineWorkouts:
-          json['routineWorkouts'] != null
-              ? (json['routineWorkouts'] as List)
-                  .map((e) => RoutineWorkout.fromJson(e))
-                  .toList()
-              : [],
+      routineWorkouts: json['routineWorkouts'] != null
+          ? (json['routineWorkouts'] as List)
+              .map((e) => RoutineWorkout.fromJson(e))
+              .toList()
+          : [],
     );
   }
 
@@ -47,4 +47,9 @@ class Routine {
       'endDate': endDate.toIso8601String(),
     };
   }
+
+  
+  List<Workout> get workouts =>
+    routineWorkouts?.map((rw) => rw.workout).whereType<Workout>().toList() ?? [];
+
 }

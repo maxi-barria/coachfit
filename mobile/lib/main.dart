@@ -1,48 +1,43 @@
-
 import 'package:flutter/material.dart';
-
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+
 import 'package:mobile/core/core.dart';
+import 'package:mobile/providers/loggin_provider.dart';
 import 'package:mobile/providers/routine_provider.dart';
 import 'package:mobile/providers/workout_status_provider.dart';
-import 'screens/login/reset_password_screen.dart';
-
-import 'package:mobile/providers/loggin_provider.dart';
-import 'package:mobile/screens/login/reset_password_screen.dart';
 import 'package:mobile/screens/login/login_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:mobile/screens/exercise/exercise_screen.dart';
-import 'widgets/core/navigation.dart';
-
+import 'package:mobile/screens/login/reset_password_screen.dart';
+import 'package:mobile/widgets/core/navigation.dart';
+import 'package:mobile/routes/app_routes.dart';      
 
 void main() async {
-  await dotenv.load(fileName: '.env'); 
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => LogginProvider()),
-      ChangeNotifierProvider(create: (_) => RoutineProvider()),
-      ChangeNotifierProvider(create: (_) => WorkoutStatusProvider()),
-    ],
-
-    child: MyApp(),
-  ));
+  WidgetsFlutterBinding.ensureInitialized();        
+  await dotenv.load(fileName: '.env');
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LogginProvider()),
+        ChangeNotifierProvider(create: (_) => RoutineProvider()),
+        ChangeNotifierProvider(create: (_) => WorkoutStatusProvider()),
+      ],
+      child: const CoachFitApp(),
+    ),
+  );
 }
 
+class CoachFitApp extends StatefulWidget {
+  const CoachFitApp({super.key});
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<CoachFitApp> createState() => _CoachFitAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _CoachFitAppState extends State<CoachFitApp> {
   final navigatorKey = GlobalKey<NavigatorState>();
-
   final _appLinks = AppLinks();
-
   String? _lastToken;
-
 
   @override
   void initState() {
@@ -51,28 +46,19 @@ class _MyAppState extends State<MyApp> {
     _listenStream();
   }
 
-  void _listenInitial() async {
-    _handleUri(await _appLinks.getInitialAppLink());
-  }
+  void _listenInitial() async => _handleUri(await _appLinks.getInitialLink());
 
-  void _listenStream() {
-    _appLinks.uriLinkStream.listen(_handleUri);
-  }
+  void _listenStream() => _appLinks.uriLinkStream.listen(_handleUri);
 
   void _handleUri(Uri? uri) {
     if (uri == null) return;
-
     final token = uri.queryParameters['token'];
     final isReset = uri.host == 'reset-password';
-
-    if (!isReset || token == null) return;
-    if (token == _lastToken) return;
+    if (!isReset || token == null || token == _lastToken) return;
     _lastToken = token;
 
     navigatorKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => ResetPasswordScreen(token: token),
-      ),
+      MaterialPageRoute(builder: (_) => ResetPasswordScreen(token: token)),
       (route) => false,
     );
   }
@@ -80,30 +66,44 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Consumer<LogginProvider>(
-      builder: (context, loginProvider, _) {
+      builder: (_, login, __) {
         return MaterialApp(
           title: 'CoachFit',
+          debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           theme: MyTheme.lightTheme,
           darkTheme: MyTheme.darkTheme,
           themeMode: ThemeMode.light,
-          routes: AppRoutes.routes, // <- sigue usando routes estáticas simples
+
+          // 🌐 --- Localización ---
+          locale: const Locale('es'),                
+          supportedLocales: const [
+            Locale('es'),                              // español
+            Locale('en'),                              // inglés (por si acaso)
+          ],
+            localizationsDelegates: const [      
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+  ],
+
+          // Rutas
+          routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.onGenerateRoute,
-          debugShowCheckedModeBanner: false,
-          home: _buildHome(loginProvider),
+
+          // Home decide según login
+          home: _buildHome(login),
         );
       },
     );
   }
 
-  Widget _buildHome(LogginProvider provider) {
-    if (provider.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  Widget _buildHome(LogginProvider login) {
+    if (login.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
-    if (provider.isAuthenticated) {
-      return const Navigation();
-    } else {
-      return const LoginScreen();
-    }
+    return login.isAuthenticated ? const Navigation() : const LoginScreen();
   }
 }

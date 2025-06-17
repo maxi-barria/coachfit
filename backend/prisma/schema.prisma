@@ -87,9 +87,9 @@ model Routine {
   id        String   @id @default(uuid())
   userId    String
   name      String
-  goal      String
-  startDate DateTime
-  endDate   DateTime
+  goal      String?
+  startDate DateTime?
+  endDate   DateTime?
   editable  Boolean  @default(true)
   version   Int
   createdAt DateTime @default(now())

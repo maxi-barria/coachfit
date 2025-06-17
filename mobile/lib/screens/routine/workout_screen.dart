@@ -1,12 +1,19 @@
-
 import 'package:flutter/material.dart';
+import 'package:mobile/models/draft.dart';
+import 'package:mobile/models/routine_workout.dart';
 import 'package:provider/provider.dart';
-
+import 'package:collection/collection.dart';
 import 'package:mobile/models/workout.dart';
 import 'package:mobile/models/set_workout.dart';
+import 'package:mobile/models/exercise.dart';
 import 'package:mobile/providers/workout_status_provider.dart';
-import 'package:mobile/themes/themes.dart';
+import 'package:mobile/providers/routine_provider.dart';
 import 'package:mobile/widgets/routine/workout_exercise_widget.dart';
+import 'package:mobile/themes/themes.dart';
+
+// Importa solo los widgets específicos desde add_exercise
+import 'package:mobile/widgets/routine/add_exercise_flow.dart'
+    show AddExerciseButton, ExercisePickerScreen, SetBuilderDialog;
 
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key, required this.workout});
@@ -17,29 +24,28 @@ class WorkoutScreen extends StatefulWidget {
 }
 
 class _WorkoutScreenState extends State<WorkoutScreen> {
-  late Workout workout;
+  late Workout _workout;
 
-  /* helpers */
+  /* ---------- helpers ---------- */
   String _fmt(int s) =>
       '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
 
   @override
   void initState() {
     super.initState();
-    workout = widget.workout;
+    _workout = widget.workout;
 
-    /// registra el workout si nadie lo ha hecho aún
+    /* registra el workout activo una sola vez */
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ws = context.read<WorkoutStatusProvider>();
-      if (ws.activeWorkout == null) ws.startWorkout(workout);
+      if (ws.activeWorkout == null) ws.startWorkout(_workout);
     });
   }
 
-  /* ---------------- acciones ---------------- */
-
+  /* ---------- acciones ---------- */
   void _finishWorkout() {
     final ws = context.read<WorkoutStatusProvider>();
-    workout.secondsDuration = ws.elapsedSecs;
+    _workout.secondsDuration = ws.elapsedSecs;
     ws.endWorkout();
     Navigator.pop(context);
   }
@@ -49,22 +55,73 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     Navigator.pop(context);
   }
 
-  void _addSet(String workoutExerciseId) {
-    final newSet = SetWorkout(
-      id: '', workoutExerciseId: workoutExerciseId,
-      repetition: 0, weight: 0, restSeconds: 60, createdAt: DateTime.now(),
-    );
-
+  /* agregar un set solo en UI local (no backend) */
+  void _addLocalSet(String workoutExerciseId) {
     setState(() {
-      workout.workoutExercises
+      _workout.workoutExercises
           .firstWhere((we) => we.id == workoutExerciseId)
           .sets
-          .add(newSet);
+          .add(
+            SetWorkout(
+              id: '',
+              workoutExerciseId: workoutExerciseId,
+              repetition: 0,
+              weight: 0,
+              restSeconds: 60,
+              createdAt: DateTime.now(),
+            ),
+          );
     });
   }
 
-  /* ---------------- UI ---------------- */
+  /* ========= flujo “Agregar ejercicio” integrado ========= */
+  Future<void> _openAddExerciseFlow() async {
+    /* 1. Selector */
+    final exercise = await Navigator.push<Exercise?>(
+      context,
+      MaterialPageRoute(builder: (_) => const ExercisePickerScreen()),
+    );
+    if (exercise == null) return;
 
+    /* 2. Sets */
+    final sets = await showDialog<List<SetDraft>>(
+      context: context,
+      builder: (_) => SetBuilderDialog(exerciseName: exercise.name),
+    );
+    if (sets == null || sets.isEmpty) return;
+
+    /* 3. Payload y provider */
+    final payload = {
+      'exerciseId': exercise.id,
+      'sets': sets.map((s) => s.toJson()).toList(),
+    };
+
+    final ok = await context.read<RoutineProvider>().addExerciseToWorkout(
+      _workout.id,
+      payload,
+    );
+    if (ok && mounted) {
+      final updated = context.read<RoutineProvider>().selectedRoutine;
+
+      final routineWorkouts = updated?.routineWorkouts;
+
+      final rw = routineWorkouts?.firstWhereOrNull(
+        (rw) => rw.workout?.id == _workout.id,
+      );
+
+      final sameWorkout = rw?.workout;
+
+      if (sameWorkout != null) {
+        setState(() => _workout = sameWorkout);
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Ejercicio agregado')));
+    }
+  }
+
+  /* ---------------- UI ---------------- */
   @override
   Widget build(BuildContext context) {
     final elapsed = context.watch<WorkoutStatusProvider>().elapsedSecs;
@@ -76,6 +133,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       },
       child: Scaffold(
         backgroundColor: MyTheme.backgroundColor,
+        floatingActionButton: AddExerciseButton(workoutId: _workout.id),
         appBar: AppBar(
           backgroundColor: MyTheme.backgroundColor,
           leading: IconButton(
@@ -85,11 +143,18 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(workout.name,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
-              Text(_fmt(elapsed),
-                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(
+                _workout.name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                _fmt(elapsed),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
             ],
           ),
           actions: [
@@ -98,24 +163,34 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyTheme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                 ),
                 onPressed: _finishWorkout,
-                child: const Text('Finalizar', style: TextStyle(fontSize: 12)),
+                child: const Text(
+                  'Finalizar',
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
               ),
             ),
           ],
         ),
+
+        /* -------- lista de ejercicios -------- */
         body: ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: workout.workoutExercises.length,
+          itemCount: _workout.workoutExercises.length,
           itemBuilder: (_, i) {
-            final we = workout.workoutExercises[i];
+            final we = _workout.workoutExercises[i];
             return WorkoutExerciseWidget(
               workoutExercise: we,
               onSetCompleted: (_) {},
-              onAddSet: () => _addSet(we.id),
+              onAddSet: () => _addLocalSet(we.id),
             );
           },
         ),
