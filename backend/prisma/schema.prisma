@@ -245,3 +245,8 @@ model State {
 
   invitations CoachInvitation[]
 }
+
+generator erd {
+  provider = "prisma-erd-generator"
+   output   = "ERD.png" 
+}
