@@ -1,13 +1,15 @@
-import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { comparePassword, hashPassword } from '../utils/hash';
-import { generateToken } from '../utils/jwt';
-import { v4 as uuidv4 } from 'uuid';
-import { sendResetEmail } from '../utils/email';
-import bcrypt from 'bcrypt';
-const router = express.Router();
-const prisma = new PrismaClient();
+import express from 'express';
+import { validate } from '../middlewares/validate'; // Middleware de validación
+import { registerUser } from '../controllers/auth.controller';
+import { registerUserSchema } from '../validators/auth.validator';
 
+
+
+
+
+const router = express.Router();
+
+/*
 router.post(
   '/login',
   async (req: Request, res: Response): Promise<void> => {
@@ -44,68 +46,11 @@ router.post(
     }
   }
 );
+*/
 
+router.post('/register', validate(registerUserSchema), registerUser)// Middleware de validación
 
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
-  const { email, password, confirmPassword, rol } = req.body;
-
-  if (!email || !password || !confirmPassword) {
-    res.status(400).json({ message: 'Todos los campos son obligatorios.' });
-    return;
-  }
-
-  if (!email.endsWith('@gmail.com')) {
-    res.status(400).json({ message: 'Solo se permiten correos Gmail.' });
-    return;
-  }
-
-  if (password.length < 6) {
-    res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres.' });
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    res.status(400).json({ message: 'Las contraseñas no coinciden.' });
-    return;
-  }
-
-  try {
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      res.status(409).json({ message: 'El correo ya está registrado.' });
-      return;
-    }
-
-    const hashedPassword = await hashPassword(password);
-
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        rol: rol || 'cliente', // default 'cliente' si no se envía
-      },
-    });
-
-    // 🔥 Incluye el rol en el token
-    const token = generateToken(user.id, user.rol);
-
-    res.status(201).json({
-      success: true,
-      message: 'Usuario registrado exitosamente.',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        rol: user.rol,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error interno del servidor.' });
-  }
-});
-
-
+/*
 router.post('/request-reset', async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
 
@@ -143,12 +88,12 @@ router.post('/request-reset', async (req: Request, res: Response): Promise<void>
 });
 
 
-router.post('/reset-password', async (req: Request, res: Response) : Promise<void> => {
+router.post('/reset-password', async (req: Request, res: Response): Promise<void> => {
   const { token, password, confirmPassword } = req.body;
 
   if (!token || !password || !confirmPassword) {
     res.status(400).json({ message: 'Todos los campos son obligatorios.' });
-    return 
+    return
   }
   if (password !== confirmPassword) {
     res.status(400).json({ message: 'Las contraseñas no coinciden.' });
@@ -164,7 +109,7 @@ router.post('/reset-password', async (req: Request, res: Response) : Promise<voi
 
   if (!user) {
     res.status(400).json({ message: 'Token inválido o expirado' });
-    return 
+    return
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -180,7 +125,7 @@ router.post('/reset-password', async (req: Request, res: Response) : Promise<voi
 
   res.status(200).json({ message: 'Contraseña actualizada correctamente' });
 });
-
+*/
 
 
 

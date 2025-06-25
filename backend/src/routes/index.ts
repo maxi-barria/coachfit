@@ -1,7 +1,7 @@
 // src/routes/index.ts
 import { Express } from 'express'
 import exerciseRoutes from './exercise.routes'
-import authRoutes from '../middlewares/auth'
+import authRoutes from './auth.routes'
 import routineRoutes from './routine.routes'
 
 export function registerRoutes(app: Express) {
