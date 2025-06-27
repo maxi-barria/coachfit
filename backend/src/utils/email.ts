@@ -7,33 +7,38 @@ const transporter = nodemailer.createTransport({
     pass: process.env.GMAIL_PASS,
   },
 });
-
-export const sendResetEmail = async (to: string, token: string) => {
-  const resetLink = `https://coachfit-backend.onrender.com/open-app?token=${token}`;
-
+export const sendResetEmail = async (to: string, code: string) => {
   await transporter.sendMail({
     from: `"CoachFit" <${process.env.GMAIL_USER}>`,
     to,
-    subject: 'Recuperación de contraseña',
+    subject: 'Código de recuperación de contraseña',
     html: `
       <div style="font-family: Arial, sans-serif; font-size: 16px;">
         <h2 style="color: #ff3c00;">Recupera tu contraseña</h2>
-        <p>Haz clic en el siguiente botón para restablecerla:</p>
-        <p>
-          <a href="${resetLink}" target="_blank" style="
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #ff3c00;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-          ">
-            Restablecer contraseña
-          </a>
-        </p>
-        <p style="margin-top: 20px;">Si no funciona el botón, también puedes copiar y pegar este enlace en tu navegador:</p>
-        <p style="color: #555;">${resetLink}</p>
-        <p>Este enlace expirará en 15 minutos.</p>
+        <p>Utiliza el siguiente código para restablecer tu contraseña:</p>
+        
+        <div style="margin: 20px 0; text-align: center;">
+          <input 
+            type="text" 
+            value="${code}" 
+            readonly 
+            style="
+              font-size: 24px;
+              padding: 10px 20px;
+              text-align: center;
+              border: 2px solid #ff3c00;
+              border-radius: 8px;
+              background-color: #fefefe;
+              color: #333;
+              letter-spacing: 4px;
+            "
+            onclick="this.select(); document.execCommand('copy');"
+          />
+          <p style="font-size: 14px; color: #666;">Haz clic en el código para copiarlo</p>
+        </div>
+
+        <p>Este código expirará en 15 minutos.</p>
+        <p style="color: #888;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
       </div>
     `,
   });
